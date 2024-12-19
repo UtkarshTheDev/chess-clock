@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -73,5 +73,73 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  border: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+@layer components {
+  .timer-container {
+    @apply h-screen w-full flex flex-col relative;
+  }
+
+  .phase-indicator {
+    @apply absolute bottom-0 left-0 right-0 h-2 bg-neutral-800/50 backdrop-blur-sm;
+  }
+  .chess-timer {
+    @apply min-h-screen w-full flex flex-col relative overflow-hidden;
+  }
+
+  .timer-display {
+    @apply text-[4rem] xs:text-[6rem] sm:text-[8rem] md:text-[10rem] lg:text-[14rem] 
+           font-bold font-digital transition-colors duration-300 tracking-wider;
+  }
+
+  .action-buttons {
+    @apply fixed bottom-4 left-1/2 transform -translate-x-1/2 
+           flex items-center justify-center space-x-4 z-50;
+  }
+
+  .phase-timeline {
+    @apply absolute bottom-0 left-0 right-0 h-4 bg-neutral-800/50 
+           backdrop-blur-sm overflow-hidden;
+  }
+
+  .progress-bar {
+    @apply h-full bg-gradient-to-r from-green-500 via-yellow-500 to-red-500;
+  }
+
+  .phase-marker {
+    @apply absolute top-1/2 -translate-y-1/2 flex flex-col items-center 
+           transition-all duration-300 cursor-pointer;
+  }
+
+  .marker-dot {
+    @apply w-3 h-3 rounded-full bg-current;
+  }
+
+  .marker-label {
+    @apply text-xs font-medium mt-1 whitespace-nowrap;
   }
 }
