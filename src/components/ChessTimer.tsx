@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "framer-motion"; // Fix ESLint error: 'motion' is not defined
 import { useEffect, useState, useCallback } from "react";
 import { useTimerStore } from "../stores/timerStore";
 import { useStatsStore } from "@/stores/statsStore";
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import GameSummary from "@/components/GameSummary";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
-import { vibrate } from "@/utils/haptics";
+import { vibrate } from "@/utils/haptics"; // Add missing dependency
 import useDoubleTap from "@/hooks/useDoubleTap";
 import useLongPress from "@/hooks/useLongPress";
 import { cn } from "@/lib/utils";
@@ -351,7 +351,14 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining
         );
     }
-  }, [activePlayer, isRunning, playMove, switchActivePlayer]);
+  }, [
+    activePlayer,
+    isRunning,
+    playMove,
+    switchActivePlayer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+  ]);
 
   const handleCheck = useCallback(() => {
     if (!activePlayer || !isRunning) return;
@@ -368,7 +375,14 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
     // Switch active player after recording check
     switchActivePlayer();
-  }, [activePlayer, isRunning, playCheck, switchActivePlayer]);
+  }, [
+    activePlayer,
+    isRunning,
+    playCheck,
+    switchActivePlayer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+  ]);
 
   const handleCheckmate = useCallback(() => {
     if (!activePlayer || !isRunning) return;
@@ -531,7 +545,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   ]);
 
   return (
-    <motion.div className="max-sm:h-full w-full h-[93vh]  relative overflow-hidden">
+    <motion.div className="max-sm:h-full w-full h-[93vh] relative overflow-hidden">
       <DesktopControls />
 
       <div className="flex h-full items-center justify-center lg:gap-20 gap-12 max-sm:gap-y-16 max-lg:flex-col">

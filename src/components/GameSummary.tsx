@@ -211,45 +211,6 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
   );
 };
 
-interface PlayerStatsSectionProps {
-  player: "white" | "black";
-  stats: PlayerStats;
-  isOverview?: boolean;
-}
-
-const PlayerStatsSection = ({
-  player,
-  stats,
-  isOverview = true,
-}: PlayerStatsSectionProps) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="space-y-6"
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className={cn(
-            "w-3 h-3 rounded-full",
-            player === "white" ? "bg-white" : "bg-black"
-          )}
-        />
-        <h3 className="text-xl font-bold text-white capitalize">{player}</h3>
-      </div>
-
-      {isOverview ? (
-        <OverviewStats stats={stats} />
-      ) : (
-        <>
-          <AnalysisStats stats={stats} />
-          <PhaseStats stats={stats} />
-        </>
-      )}
-    </motion.div>
-  );
-};
-
 const MoveItem = ({
   move,
   isFastest,
@@ -329,48 +290,45 @@ const MoveItem = ({
 };
 
 const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
-  const [activeTab, setActiveTab] = useState<"overview" | "analysis" | "moves">(
+  const { gameSummary } = useStatsStore();
+  const [activeTab, setActiveTab] = useState<"overview" | "analysis">(
     "overview"
   );
-  const { gameSummary } = useStatsStore();
 
-  if (!gameSummary) {
-    return null;
-  }
+  if (!gameSummary) return null;
 
-  const renderMoveHistory = () => {
-    const allMoves = [
-      ...gameSummary.whiteStats.moveHistory,
-      ...gameSummary.blackStats.moveHistory,
-    ].sort((a, b) => a.moveNumber - b.moveNumber);
+  const { winner, endReason, whiteStats, blackStats } = gameSummary;
 
-    const fastestMove = Math.min(...allMoves.map((m) => m.time));
-    const slowestMove = Math.max(...allMoves.map((m) => m.time));
-
-    return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-white">Move History</h3>
-        <div className="space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
-          {allMoves.map((move) => (
-            <MoveItem
-              key={`${move.by}-${move.moveNumber}`}
-              move={move}
-              isFastest={move.time === fastestMove}
-              isSlowest={move.time === slowestMove}
+  const renderContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return (
+          <div className="space-y-6">
+            <OverviewStats
+              stats={winner === "white" ? whiteStats : blackStats}
             />
-          ))}
-        </div>
-      </div>
-    );
+          </div>
+        );
+      case "analysis":
+        return (
+          <div className="space-y-6">
+            <AnalysisStats
+              stats={winner === "white" ? whiteStats : blackStats}
+            />
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="bg-neutral-900/95 rounded-xl shadow-2xl max-w-5xl mx-auto backdrop-blur-md max-h-[90vh] flex flex-col">
-      <WinnerBanner
-        winner={gameSummary.winner}
-        reason={gameSummary.endReason}
-      />
-
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50"
+    >
+      <WinnerBanner winner={winner} reason={endReason} />
       <div className="space-y-6 p-4 sm:p-6">
         <div className="space-y-4">
           <h2 className="text-lg sm:text-xl font-semibold text-white">
@@ -383,9 +341,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
               <div className="flex items-center gap-2">
                 <Crown className="w-5 h-5 text-yellow-500" />
                 <span className="text-lg font-medium text-white">
-                  {gameSummary.winner === "draw"
-                    ? "Draw"
-                    : `${gameSummary.winner} wins!`}
+                  {winner === "draw" ? "Draw" : `${winner} wins!`}
                 </span>
               </div>
             </div>
@@ -397,7 +353,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
               <div className="flex items-center gap-2">
                 <Swords className="w-5 h-5 text-blue-500" />
                 <span className="text-lg font-medium text-white capitalize">
-                  {gameSummary.endReason}
+                  {endReason}
                 </span>
               </div>
             </div>
@@ -430,43 +386,10 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
               >
                 Analysis
               </button>
-              <button
-                onClick={() => setActiveTab("moves")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                  activeTab === "moves"
-                    ? "bg-neutral-800 text-white"
-                    : "text-neutral-400 hover:text-white"
-                )}
-              >
-                Moves
-              </button>
             </div>
           </div>
 
-          {activeTab === "moves" ? (
-            renderMoveHistory()
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium text-neutral-400">White</h4>
-                {activeTab === "overview" ? (
-                  <OverviewStats stats={gameSummary.whiteStats} />
-                ) : (
-                  <AnalysisStats stats={gameSummary.whiteStats} />
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="text-sm font-medium text-neutral-400">Black</h4>
-                {activeTab === "overview" ? (
-                  <OverviewStats stats={gameSummary.blackStats} />
-                ) : (
-                  <AnalysisStats stats={gameSummary.blackStats} />
-                )}
-              </div>
-            </div>
-          )}
+          {renderContent()}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mt-8">
@@ -496,7 +419,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
