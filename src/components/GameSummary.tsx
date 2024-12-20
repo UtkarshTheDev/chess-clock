@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
-import { Clock, Trophy, Swords, Crown, Play, Home, Check } from "lucide-react";
+import { Swords, Crown, Play, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "./ui/CustomTooltip";
 import { type PlayerStats, type MoveRecord } from "@/stores/statsStore";
@@ -72,38 +72,94 @@ interface PhaseStatsProps {
 }
 
 const PhaseStats = ({ stats }: PhaseStatsProps) => {
+  const totalTime = stats.totalTimeUsed;
   const phaseData = [
     {
       phase: "Opening",
       time: stats.phaseStats.opening.totalTime,
+      moves: stats.phaseStats.opening.moveCount,
     },
     {
       phase: "Middlegame",
       time: stats.phaseStats.middlegame.totalTime,
+      moves: stats.phaseStats.middlegame.moveCount,
     },
     {
       phase: "Endgame",
       time: stats.phaseStats.endgame.totalTime,
+      moves: stats.phaseStats.endgame.moveCount,
     },
   ];
 
   return (
     <div className="space-y-2">
-      {phaseData.map(({ phase, time }) => (
+      {phaseData.map(({ phase, time, moves }) => (
         <div key={phase} className="space-y-1">
           <div className="flex justify-between text-sm">
             <span className="text-neutral-400">{phase}</span>
-            <span className="text-white">{time.toFixed(1)}s</span>
+            <div className="flex items-center gap-2">
+              <span className="text-white">{time.toFixed(1)}s</span>
+              <span className="text-neutral-500">({moves} moves)</span>
+            </div>
           </div>
           <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-              style={{ width: `${(time / stats.totalTimeUsed) * 100}%` }}
+              style={{ width: `${(time / totalTime) * 100}%` }}
             />
           </div>
         </div>
       ))}
     </div>
+  );
+};
+
+const MoveItem = ({
+  move,
+  isFastest,
+  isSlowest,
+}: {
+  move: MoveRecord;
+  isFastest: boolean;
+  isSlowest: boolean;
+}) => {
+  const getPhaseColor = () => {
+    switch (move.phase) {
+      case "opening":
+        return "text-blue-400";
+      case "middlegame":
+        return "text-yellow-400";
+      case "endgame":
+        return "text-red-400";
+      default:
+        return "text-white";
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        "p-3 rounded-lg",
+        "bg-white/5 backdrop-blur-sm",
+        "border border-white/10",
+        isFastest && "border-green-500/50",
+        isSlowest && "border-red-500/50"
+      )}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-white/60">Move {move.moveNumber}</span>
+          <span className={cn("text-sm font-medium", getPhaseColor())}>
+            {move.phase.charAt(0).toUpperCase() + move.phase.slice(1)}
+          </span>
+        </div>
+        <span className="text-sm font-medium text-white">
+          {move.time.toFixed(1)}s
+        </span>
+      </div>
+    </motion.div>
   );
 };
 
@@ -128,6 +184,9 @@ const AnalysisStats = ({ stats }: { stats: PlayerStats }) => {
       0
     ) / totalMoves;
   const consistencyScore = Math.max(0, 100 - timeVariance * 2).toFixed(1);
+  const moveHistory = [...stats.moveHistory].sort((a, b) => b.time - a.time);
+  const fastestMove = moveHistory[moveHistory.length - 1];
+  const slowestMove = moveHistory[0];
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -165,6 +224,30 @@ const AnalysisStats = ({ stats }: { stats: PlayerStats }) => {
         value={`${(stats.timeRemaining / totalMoves).toFixed(1)}s`}
         tooltip="Average time remaining after each move"
       />
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-4">
+            Phase Analysis
+          </h3>
+          <PhaseStats stats={stats} />
+        </div>
+
+        <div>
+          <h3 className="text-lg font-semibold text-white mb-4">
+            Move History
+          </h3>
+          <div className="space-y-2">
+            {moveHistory.map((move) => (
+              <MoveItem
+                key={move.moveNumber}
+                move={move}
+                isFastest={move === fastestMove}
+                isSlowest={move === slowestMove}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -207,84 +290,6 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
         value={totalMoves.toString()}
         tooltip="Total number of moves made"
       />
-    </div>
-  );
-};
-
-const MoveItem = ({
-  move,
-  isFastest,
-  isSlowest,
-}: {
-  move: MoveRecord;
-  isFastest: boolean;
-  isSlowest: boolean;
-}) => {
-  const getTypeIcon = () => {
-    switch (move.type) {
-      case "check":
-        return <Check className="w-4 h-4 text-yellow-400" />;
-      case "checkmate":
-        return <Trophy className="w-4 h-4 text-amber-400" />;
-      default:
-        return null;
-    }
-  };
-
-  const getPhaseColor = () => {
-    switch (move.phase) {
-      case "opening":
-        return "text-blue-400";
-      case "middlegame":
-        return "text-purple-400";
-      case "endgame":
-        return "text-red-400";
-      default:
-        return "text-neutral-400";
-    }
-  };
-
-  return (
-    <div
-      className={cn(
-        "px-4 py-2 rounded-lg",
-        "flex items-center justify-between",
-        "transition-all duration-200",
-        "border border-transparent",
-        isFastest && "bg-green-500/20 border-green-500/30",
-        isSlowest && "bg-red-500/20 border-red-500/30",
-        !isFastest && !isSlowest && "hover:bg-white/5 hover:border-white/10"
-      )}
-    >
-      <div className="flex items-center gap-3">
-        <span className="text-sm text-neutral-400 w-6">{move.moveNumber}.</span>
-        <div className="flex items-center gap-2">
-          <span
-            className={cn(
-              "text-sm font-medium capitalize",
-              move.by === "white" ? "text-white" : "text-neutral-300"
-            )}
-          >
-            {move.by}
-          </span>
-          {getTypeIcon()}
-        </div>
-        <span className={cn("text-xs font-medium capitalize", getPhaseColor())}>
-          {move.phase}
-        </span>
-      </div>
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-1">
-          <Clock className="w-4 h-4 text-neutral-400" />
-          <span className="text-sm text-neutral-400">
-            {move.time.toFixed(1)}s
-          </span>
-        </div>
-        <div className="flex items-center gap-1 text-xs text-neutral-500">
-          <span>{move.timeRemaining.toFixed(0)}s</span>
-          <span>left</span>
-        </div>
-      </div>
     </div>
   );
 };

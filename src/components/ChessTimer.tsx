@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion"; // Fix ESLint error: 'motion' is not defined
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback } from "react";
 import { useTimerStore } from "../stores/timerStore";
 import { useStatsStore } from "@/stores/statsStore";
@@ -13,11 +13,11 @@ import {
 } from "lucide-react";
 import GameSummary from "@/components/GameSummary";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
-import { vibrate } from "@/utils/haptics"; // Add missing dependency
+import { vibrate } from "@/utils/haptics";
 import useDoubleTap from "@/hooks/useDoubleTap";
 import useLongPress from "@/hooks/useLongPress";
 import { cn } from "@/lib/utils";
-import type { GameEndReason } from "@/types/chess";
+// import type { GameEndReason } from "@/types/chess";
 import { usePhaseTransition } from "@/hooks/usePhaseTransition";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
 import { GestureHelpDialog } from "./GestureHelpDialog";
@@ -162,7 +162,7 @@ const ConfirmationModal = ({
 };
 
 interface ChessTimerProps {
-  onReset: () => void;
+  onReset?: () => void;
 }
 
 export const ChessTimer = ({ onReset }: ChessTimerProps) => {
@@ -186,11 +186,55 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
       player: null,
     }
   );
+
   const initialTime = 15 * 60; // 15 minutes
   const { playMove, playCheck, playGameEnd, playGameStart } = useSoundEffects();
   const { currentPhase, phaseColor } = usePhaseTransition();
 
-  // Add timer interval
+  const handleGameEnd = useCallback(
+    (reason: "check" | "checkmate" | "draw" | "timeout") => {
+      if (!activePlayer) return;
+
+      pauseTimer();
+      const winner =
+        reason === "timeout"
+          ? activePlayer === "white"
+            ? "black"
+            : "white"
+          : activePlayer;
+
+      useStatsStore
+        .getState()
+        .recordMove(
+          winner,
+          0,
+          "normal",
+          winner === "white" ? whiteTimeRemaining : blackTimeRemaining
+        );
+
+      if (reason === "draw") {
+        useStatsStore.getState().setGameSummary("draw", "by agreement");
+      } else if (reason === "timeout") {
+        useStatsStore.getState().setGameSummary(winner, "timeout");
+      } else {
+        useStatsStore.getState().setGameSummary(winner, reason);
+      }
+
+      setTimeout(() => {
+        setShowSummary(true);
+        playGameEnd();
+        vibrate([200, 100, 200]);
+      }, 100);
+    },
+    [
+      activePlayer,
+      pauseTimer,
+      whiteTimeRemaining,
+      blackTimeRemaining,
+      playGameEnd,
+    ]
+  );
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
@@ -217,13 +261,230 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         clearInterval(interval);
       }
     };
-  }, [isRunning, activePlayer, whiteTimeRemaining, blackTimeRemaining]);
+  }, [
+    isRunning,
+    activePlayer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+    handleGameEnd,
+  ]);
 
-  // Desktop Controls
+  const handleReset = useCallback(() => {
+    if (onReset) {
+      onReset();
+    }
+    initializeTime(15);
+    setShowSummary(false);
+    playGameStart();
+    useStatsStore.getState().resetStats();
+  }, [onReset, initializeTime, playGameStart]);
+
+  const getPhaseBasedStyle = useCallback(() => {
+    switch (currentPhase) {
+      case "opening":
+        return "border-blue-500";
+      case "middleGame":
+        return "border-yellow-500";
+      case "endGame":
+        return "border-red-500";
+      default:
+        return "border-gray-500";
+    }
+  }, [currentPhase]);
+
+  const handlePlayerMove = useCallback(() => {
+    if (activePlayer && isRunning) {
+      playMove();
+      switchActivePlayer();
+      useStatsStore
+        .getState()
+        .recordMove(
+          activePlayer,
+          0,
+          "normal",
+          activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining
+        );
+    }
+  }, [
+    activePlayer,
+    isRunning,
+    playMove,
+    switchActivePlayer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+  ]);
+
+  const handleCheck = useCallback(() => {
+    if (!activePlayer || !isRunning) return;
+
+    playCheck();
+    vibrate([100, 50, 100]);
+
+    const timeRemaining =
+      activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining;
+
+    useStatsStore
+      .getState()
+      .recordMove(activePlayer, 0, "check", timeRemaining);
+
+    switchActivePlayer();
+  }, [
+    activePlayer,
+    isRunning,
+    playCheck,
+    switchActivePlayer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+  ]);
+
+  const handleCheckmate = useCallback(() => {
+    if (!activePlayer || !isRunning) return;
+
+    pauseTimer();
+    const timeRemaining =
+      activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining;
+
+    useStatsStore
+      .getState()
+      .recordMove(activePlayer, 0, "checkmate", timeRemaining);
+
+    setTimeout(() => {
+      setShowSummary(true);
+      playGameEnd();
+      vibrate([200, 100, 200]);
+    }, 100);
+  }, [
+    activePlayer,
+    isRunning,
+    pauseTimer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+    playGameEnd,
+  ]);
+
+  const handleDraw = useCallback(() => {
+    if (!activePlayer || !isRunning) return;
+
+    pauseTimer();
+    useStatsStore.getState().setGameSummary("draw", "by agreement");
+
+    setTimeout(() => {
+      setShowSummary(true);
+      playGameEnd();
+      vibrate([200, 100, 200]);
+    }, 100);
+  }, [activePlayer, isRunning, pauseTimer, playGameEnd]);
+
+  const handleConfirmation = useCallback(
+    (confirmed: boolean) => {
+      if (confirmed) {
+        if (confirmationState.type === "checkmate") {
+          handleCheckmate();
+        } else if (confirmationState.type === "draw") {
+          handleDraw();
+        }
+      }
+      setConfirmationState({
+        isOpen: false,
+        type: null,
+        player: null,
+      });
+    },
+    [confirmationState.type, handleCheckmate, handleDraw]
+  );
+
+  const doubleTapHandler = useCallback(() => {
+    if (activePlayer) {
+      handleCheck();
+    }
+  }, [activePlayer, handleCheck]);
+
+  const longPressHandler = useCallback(() => {
+    if (activePlayer) {
+      setConfirmationState({
+        isOpen: true,
+        type: "checkmate",
+        player: activePlayer,
+      });
+    }
+  }, [activePlayer]);
+
+  const doubleTap = useDoubleTap(doubleTapHandler, 300);
+  const longPress = useLongPress(longPressHandler, 3000);
+
+  const gestureHandlers = {
+    ...doubleTap,
+    ...longPress,
+    onClick: handlePlayerMove,
+  };
+
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!isRunning) {
+        return;
+      }
+
+      type KeyActions = {
+        [key: string]: () => void;
+      };
+
+      const actions: KeyActions = {
+        Space: () => handlePlayerMove(),
+        Enter: () => handleCheck(),
+        Tab: () => {
+          e.preventDefault();
+          handleCheckmate();
+        },
+        KeyP: () => {
+          if (isRunning) {
+            pauseTimer();
+          } else {
+            resumeTimer();
+          }
+        },
+      };
+
+      const action = actions[e.code as keyof typeof actions];
+      if (action) {
+        action();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [
+    isRunning,
+    handlePlayerMove,
+    handleCheck,
+    handleCheckmate,
+    pauseTimer,
+    resumeTimer,
+  ]);
+
+  const renderTimerSquare = (player: "white" | "black") => {
+    const isActive = activePlayer === player;
+    const timeRemaining =
+      player === "white" ? whiteTimeRemaining : blackTimeRemaining;
+
+    return (
+      <motion.div
+        className={cn(
+          "flex-1 flex items-center justify-center",
+          "cursor-pointer select-none",
+          isActive ? "opacity-100" : "opacity-50",
+          getPhaseBasedStyle()
+        )}
+        {...(isActive ? gestureHandlers : {})}
+      >
+        <TimerSquare player={player} time={timeRemaining} isActive={isActive} />
+      </motion.div>
+    );
+  };
+
   const DesktopControls = () => (
     <div className="hidden md:flex absolute top-6 left-1/2 -translate-x-1/2 gap-8">
       <ControlButton
-        onClick={() => initializeTime(15)}
+        onClick={handleReset}
         icon={<RefreshCcw />}
         label="Reset"
       />
@@ -235,7 +496,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     </div>
   );
 
-  // Mobile Controls
   const MobileControls = () => (
     <div className="md:hidden flex items-center gap-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
       <ControlButton
@@ -246,19 +506,19 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         onClick={() => setShowGestureHelp(true)}
         icon={<HelpCircle />}
       />
-      <ControlButton onClick={() => initializeTime(15)} icon={<RefreshCcw />} />
+      <ControlButton onClick={handleReset} icon={<RefreshCcw />} />
     </div>
   );
 
-  // Timer Square Component
   const TimerSquare = ({
     player,
     time,
+    isActive,
   }: {
     player: "white" | "black";
     time: number;
+    isActive: boolean;
   }) => {
-    const isActive = activePlayer === player;
     const timeBasedColor = getTimeBasedColor(time, initialTime, player);
 
     return (
@@ -337,271 +597,41 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     );
   };
 
-  // Game logic handlers
-  const handlePlayerMove = useCallback(() => {
-    if (activePlayer && isRunning) {
-      playMove();
-      switchActivePlayer();
-      useStatsStore
-        .getState()
-        .recordMove(
-          activePlayer,
-          0,
-          "normal",
-          activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining
-        );
-    }
-  }, [
-    activePlayer,
-    isRunning,
-    playMove,
-    switchActivePlayer,
-    whiteTimeRemaining,
-    blackTimeRemaining,
-  ]);
-
-  const handleCheck = useCallback(() => {
-    if (!activePlayer || !isRunning) return;
-
-    playCheck();
-    vibrate([100, 50, 100]);
-
-    const timeRemaining =
-      activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining;
-
-    useStatsStore
-      .getState()
-      .recordMove(activePlayer, 0, "check", timeRemaining);
-
-    // Switch active player after recording check
-    switchActivePlayer();
-  }, [
-    activePlayer,
-    isRunning,
-    playCheck,
-    switchActivePlayer,
-    whiteTimeRemaining,
-    blackTimeRemaining,
-  ]);
-
-  const handleCheckmate = useCallback(() => {
-    if (!activePlayer || !isRunning) return;
-
-    pauseTimer();
-    const timeRemaining =
-      activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining;
-
-    // Record the final move
-    useStatsStore
-      .getState()
-      .recordMove(activePlayer, 0, "checkmate", timeRemaining);
-
-    // End the game and set the game summary
-    useStatsStore.getState().setGameSummary(activePlayer, "checkmate");
-
-    // Show the game summary after a short delay to ensure stats are updated
-    setTimeout(() => {
-      setShowSummary(true);
-      playGameEnd();
-      vibrate([200, 100, 200]);
-    }, 100);
-  }, [
-    activePlayer,
-    isRunning,
-    pauseTimer,
-    whiteTimeRemaining,
-    blackTimeRemaining,
-  ]);
-
-  const handleDraw = useCallback(() => {
-    if (!activePlayer || !isRunning) return;
-
-    pauseTimer();
-
-    // End the game and set the game summary
-    useStatsStore.getState().setGameSummary("draw", "by agreement");
-
-    // Show the game summary after a short delay to ensure stats are updated
-    setTimeout(() => {
-      setShowSummary(true);
-      playGameEnd();
-      vibrate([200, 100, 200]);
-    }, 100);
-  }, [activePlayer, isRunning, pauseTimer]);
-
-  const handleGameEnd = useCallback(
-    (reason: "check" | "checkmate" | "draw" | "timeout") => {
-      if (!activePlayer) return;
-
-      pauseTimer();
-
-      const winner =
-        reason === "timeout"
-          ? activePlayer === "white"
-            ? "black"
-            : "white"
-          : activePlayer;
-
-      // Record the final move with the game-ending move type
-      useStatsStore
-        .getState()
-        .recordMove(
-          winner,
-          0,
-          "normal",
-          winner === "white" ? whiteTimeRemaining : blackTimeRemaining
-        );
-
-      // Set game summary
-      if (reason === "draw") {
-        useStatsStore.getState().setGameSummary("draw", "by agreement");
-      } else if (reason === "timeout") {
-        useStatsStore.getState().setGameSummary(winner, "timeout");
-      } else {
-        useStatsStore.getState().setGameSummary(winner, reason);
-      }
-
-      // Show the game summary after a short delay to ensure stats are updated
-      setTimeout(() => {
-        setShowSummary(true);
-        playGameEnd();
-        vibrate([200, 100, 200]);
-      }, 100);
-    },
-    [
-      activePlayer,
-      pauseTimer,
-      whiteTimeRemaining,
-      blackTimeRemaining,
-      playGameEnd,
-    ]
-  );
-
-  const handleConfirmation = useCallback(
-    (confirmed: boolean) => {
-      if (confirmed) {
-        if (confirmationState.type === "checkmate") {
-          handleCheckmate();
-        } else if (confirmationState.type === "draw") {
-          handleDraw();
-        }
-      }
-      setConfirmationState({ isOpen: false, type: null, player: null });
-    },
-    [confirmationState, handleCheckmate, handleDraw]
-  );
-
-  // Double tap and long press handlers
-  const doubleTapHandler = useCallback(() => {
-    if (activePlayer) {
-      handleCheck();
-    }
-  }, [activePlayer, handleCheck]);
-
-  const longPressHandler = useCallback(() => {
-    if (activePlayer) {
-      setConfirmationState({
-        isOpen: true,
-        type: "checkmate",
-        player: activePlayer,
-      });
-    }
-  }, [activePlayer]);
-
-  const doubleTap = useDoubleTap(doubleTapHandler, 300);
-  const longPress = useLongPress(longPressHandler, 3000);
-
-  // Combine gesture handlers
-  const gestureHandlers = {
-    ...doubleTap,
-    ...longPress,
-    onClick: handlePlayerMove,
-  };
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.code === "Space") handlePlayerMove();
-      if (e.code === "Enter") handleCheck();
-      if (e.code === "Tab") {
-        e.preventDefault();
-        handleCheckmate();
-      }
-      if (e.code === "KeyP") {
-        isRunning ? pauseTimer() : resumeTimer();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [
-    isRunning,
-    activePlayer,
-    handlePlayerMove,
-    handleCheck,
-    handleCheckmate,
-    pauseTimer,
-    resumeTimer,
-  ]);
-
   return (
     <motion.div className="max-sm:h-full w-full h-[93vh] relative overflow-hidden">
-      <DesktopControls />
+      <div className="relative h-full flex flex-col">
+        {renderTimerSquare("white")}
+        {renderTimerSquare("black")}
 
-      <div className="flex h-full items-center justify-center lg:gap-20 gap-12 max-sm:gap-y-16 max-lg:flex-col">
-        <TimerSquare player="black" time={blackTimeRemaining} />
+        <DesktopControls />
         <MobileControls />
-        <TimerSquare player="white" time={whiteTimeRemaining} />
-      </div>
 
-      {/* Desktop Keyboard Shortcuts */}
-      <div className="hidden md:block absolute bottom-6 left-1/2 -translate-x-1/2">
-        <KeyboardShortcuts />
-      </div>
+        <div className="hidden md:block absolute bottom-6 left-1/2 -translate-x-1/2">
+          <KeyboardShortcuts />
+        </div>
 
-      <AnimatePresence>
-        {showSummary && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="w-full max-w-4xl"
-            >
-              <GameSummary
-                onNewGame={() => {
-                  setShowSummary(false);
-                  initializeTime(15);
-                  useStatsStore.getState().resetStats();
-                  playGameStart();
-                }}
-                onExit={() => {
-                  setShowSummary(false);
-                  useStatsStore.getState().resetStats();
-                }}
-              />
-            </motion.div>
-          </motion.div>
+        {showGestureHelp && (
+          <GestureHelpDialog
+            isOpen={showGestureHelp}
+            onClose={() => setShowGestureHelp(false)}
+          />
         )}
-      </AnimatePresence>
 
-      <GestureHelpDialog
-        isOpen={showGestureHelp}
-        onClose={() => setShowGestureHelp(false)}
-      />
+        {confirmationState.isOpen && (
+          <ConfirmationModal
+            type={confirmationState.type!}
+            onConfirm={() => handleConfirmation(true)}
+            onCancel={() => handleConfirmation(false)}
+          />
+        )}
 
-      {confirmationState.isOpen && (
-        <ConfirmationModal
-          type={confirmationState.type!}
-          onConfirm={() => handleConfirmation(true)}
-          onCancel={() => handleConfirmation(false)}
-        />
-      )}
+        {showSummary && (
+          <GameSummary
+            onNewGame={handleReset}
+            onExit={() => setShowSummary(false)}
+          />
+        )}
+      </div>
     </motion.div>
   );
 };
