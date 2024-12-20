@@ -16,7 +16,7 @@ const StatCard = ({
   comparison,
   tooltip,
 }: {
-  icon: any;
+  icon: React.ElementType;
   label: string;
   value: string | number;
   comparison?: number;

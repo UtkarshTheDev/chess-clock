@@ -179,24 +179,19 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     get().recordMove(player, 0, "check");
   },
 
-  setGameSummary: (winner, reason) => {
-    set(
-      (state) =>
-        ({
-          gameSummary: {
-            winner,
-            endReason: reason,
-            whiteStats: state.whiteStats,
-            blackStats: state.blackStats,
-            totalMoves: state.moveHistory.length,
-            gameStartTime: state.gameStartTime,
-            gameEndTime: new Date(),
-            timeRatio:
-              state.whiteStats.totalTimeUsed /
-              (state.blackStats.totalTimeUsed || 1),
-          } as any,
-        } as Partial<StatsState>)
-    );
+  setGameSummary: (winner: "white" | "black" | "draw", reason: string) => {
+    set({
+      gameSummary: {
+        winner,
+        endReason: reason,
+        whiteStats: get().whiteStats,
+        blackStats: get().blackStats,
+        totalMoves: get().moveHistory.length,
+        gameStartTime: get().gameStartTime,
+        gameEndTime: new Date(),
+        timeRatio: calculateTimeRatio(get().whiteStats, get().blackStats),
+      },
+    });
   },
 
   startGame: () => {
@@ -248,3 +243,7 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     } as Partial<StatsState>);
   },
 }));
+
+function calculateTimeRatio(whiteStats: PlayerStats, blackStats: PlayerStats) {
+  return whiteStats.totalTimeUsed / (blackStats.totalTimeUsed || 1);
+}

@@ -8,8 +8,10 @@ export default function useLongPress(callback: () => void, ms = 500) {
   }, [callback, ms]);
 
   const stop = useCallback(() => {
-    timeoutRef.current && clearTimeout(timeoutRef.current);
-  }, []);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  }, [timeoutRef]);
 
   return {
     onTouchStart: start,

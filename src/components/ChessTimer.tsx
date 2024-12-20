@@ -10,7 +10,6 @@ import {
   Pause,
   HelpCircle,
   Handshake,
-  X,
 } from "lucide-react";
 import GameSummary from "@/components/GameSummary";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
@@ -478,7 +477,15 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isRunning, activePlayer]);
+  }, [
+    isRunning,
+    activePlayer,
+    handlePlayerMove,
+    handleCheck,
+    handleCheckmate,
+    pauseTimer,
+    resumeTimer,
+  ]);
 
   return (
     <motion.div className="max-sm:h-full w-full h-[93vh]  relative overflow-hidden">

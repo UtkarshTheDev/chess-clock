@@ -10,6 +10,7 @@ import {
   Tooltip as ChartTooltip,
   Legend,
   Filler,
+  TooltipItem,
 } from "chart.js";
 import { motion } from "motion/react";
 
@@ -109,23 +110,27 @@ const TimeGraph = () => {
         boxPadding: 6,
         usePointStyle: true,
         callbacks: {
-          title: (tooltipItems: any) => {
+          title: function (tooltipItems: TooltipItem<"line">[]) {
             return `Move ${tooltipItems[0].parsed.x}`;
           },
-          label: (context: any) => {
-            const move = context.raw;
+          label: function (tooltipItem: TooltipItem<"line">) {
+            const move = tooltipItem.raw as {
+              y: number;
+              phase: string;
+              type: string;
+            };
             const timeStr = move.y.toFixed(1);
             const phaseStr =
               move.phase.charAt(0).toUpperCase() + move.phase.slice(1);
             const typeStr = move.type !== "normal" ? ` (${move.type})` : "";
 
             return [
-              `${context.dataset.label}: ${timeStr}s${typeStr}`,
+              `${tooltipItem.dataset.label}: ${timeStr}s${typeStr}`,
               `Phase: ${phaseStr}`,
             ];
           },
-          labelTextColor: (context: any) => {
-            return context.dataset.label === "White"
+          labelTextColor: function (tooltipItem: TooltipItem<"line">) {
+            return tooltipItem.dataset.label === "White"
               ? "rgba(219, 234, 254, 1)"
               : "rgba(55, 65, 81, 1)";
           },

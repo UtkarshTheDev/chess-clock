@@ -11,12 +11,10 @@ import {
   TimerOff,
   Hourglass,
   TimerReset,
-  PlayCircleIcon,
   PlayIcon,
 } from "lucide-react";
 import { useTimerTypeStore, TimerType } from "@/stores/timerTypeStore";
 import { ChessTimer } from "@/components/ChessTimer";
-import { useStatsStore } from "@/stores/statsStore";
 
 type GameState = "home" | "playing";
 
@@ -71,8 +69,6 @@ export default function Home() {
   const [time, setTime] = useState(15);
   const [selectedType, setSelectedType] = useState<TimerType>("normal");
   const [gameState, setGameState] = useState<GameState>("home");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const setTimer = () => {
     initializeTime(time);
@@ -85,13 +81,10 @@ export default function Home() {
 
   const startGame = async () => {
     try {
-      setIsLoading(true);
       setTimer();
       setGameState("playing");
     } catch (err) {
-      setError("Failed to start game. Please try again.");
-    } finally {
-      setIsLoading(false);
+      console.error(err);
     }
   };
 
@@ -100,7 +93,6 @@ export default function Home() {
     setTime(15);
     setSelectedType("normal");
     useTimerStore.getState().resetTimer();
-    useStatsStore.getState().resetStats();
   };
 
   const renderContent = () => {

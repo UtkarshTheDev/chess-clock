@@ -1,27 +1,8 @@
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
-import { Button } from "./ui/button";
-import {
-  Info,
-  Clock,
-  Activity,
-  Zap,
-  Trophy,
-  Timer,
-  MoveRight,
-  Hourglass,
-  BarChart,
-  Lightbulb,
-  Swords,
-  Crown,
-  Play,
-  Home,
-  Check,
-} from "lucide-react"; // Icons for stats
+import { Clock, Trophy, Swords, Crown, Play, Home, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
-import TimeGraph from "./TimeGraph";
-import { Tooltip } from "./ui/CustomTooltip";
 import { type PlayerStats, type MoveRecord } from "@/stores/statsStore";
 
 interface GameSummaryProps {
@@ -69,12 +50,10 @@ const StatCard = ({
     animate={{ opacity: 1, y: 0 }}
     className="bg-neutral-800/50 backdrop-blur-sm p-4 rounded-lg border border-white/5"
   >
-    <Tooltip text={tooltip || ""}>
-      <div className="space-y-1">
-        <p className="text-sm text-neutral-400">{label}</p>
-        <p className="text-lg font-semibold text-white">{value}</p>
-      </div>
-    </Tooltip>
+    <div className="space-y-1">
+      <p className="text-sm text-neutral-400">{label}</p>
+      <p className="text-lg font-semibold text-white">{value}</p>
+    </div>
   </motion.div>
 );
 
