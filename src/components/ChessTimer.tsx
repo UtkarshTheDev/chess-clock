@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTimerStore } from "../stores/timerStore";
 import { useStatsStore } from "@/stores/statsStore";
 import {
@@ -299,7 +299,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         >
           <ActionButton
             variant="check"
-            onClick={() => isActive && handleCheck()}
+            onClick={handleCheck}
             disabled={!isActive}
             icon={<Check className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Check"
@@ -338,7 +338,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   };
 
   // Game logic handlers
-  const handlePlayerMove = () => {
+  const handlePlayerMove = useCallback(() => {
     if (activePlayer && isRunning) {
       playMove();
       switchActivePlayer();
@@ -351,9 +351,9 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining
         );
     }
-  };
+  }, [activePlayer, isRunning, playMove, switchActivePlayer]);
 
-  const handleCheck = () => {
+  const handleCheck = useCallback(() => {
     if (!activePlayer || !isRunning) return;
 
     playCheck();
@@ -368,9 +368,9 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
     // Switch active player after recording check
     switchActivePlayer();
-  };
+  }, [activePlayer, isRunning, playCheck, switchActivePlayer]);
 
-  const handleCheckmate = () => {
+  const handleCheckmate = useCallback(() => {
     if (!activePlayer || !isRunning) return;
 
     pauseTimer();
@@ -391,9 +391,15 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
       playGameEnd();
       vibrate([200, 100, 200]);
     }, 100);
-  };
+  }, [
+    activePlayer,
+    isRunning,
+    pauseTimer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+  ]);
 
-  const handleDraw = () => {
+  const handleDraw = useCallback(() => {
     if (!activePlayer || !isRunning) return;
 
     pauseTimer();
@@ -407,58 +413,95 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
       playGameEnd();
       vibrate([200, 100, 200]);
     }, 100);
-  };
+  }, [activePlayer, isRunning, pauseTimer]);
 
-  const handleGameEnd = (
-    reason: "check" | "checkmate" | "draw" | "timeout"
-  ) => {
-    if (!activePlayer) return;
+  const handleGameEnd = useCallback(
+    (reason: "check" | "checkmate" | "draw" | "timeout") => {
+      if (!activePlayer) return;
 
-    pauseTimer();
+      pauseTimer();
 
-    const winner =
-      reason === "timeout"
-        ? activePlayer === "white"
-          ? "black"
-          : "white"
-        : activePlayer;
+      const winner =
+        reason === "timeout"
+          ? activePlayer === "white"
+            ? "black"
+            : "white"
+          : activePlayer;
 
-    // Record the final move with the game-ending move type
-    useStatsStore
-      .getState()
-      .recordMove(
-        winner,
-        0,
-        "normal",
-        winner === "white" ? whiteTimeRemaining : blackTimeRemaining
-      );
+      // Record the final move with the game-ending move type
+      useStatsStore
+        .getState()
+        .recordMove(
+          winner,
+          0,
+          "normal",
+          winner === "white" ? whiteTimeRemaining : blackTimeRemaining
+        );
 
-    // Set game summary
-    if (reason === "draw") {
-      useStatsStore.getState().setGameSummary("draw", "by agreement");
-    } else if (reason === "timeout") {
-      useStatsStore.getState().setGameSummary(winner, "timeout");
-    } else {
-      useStatsStore.getState().setGameSummary(winner, reason);
-    }
-
-    // Show the game summary after a short delay to ensure stats are updated
-    setTimeout(() => {
-      setShowSummary(true);
-      playGameEnd();
-      vibrate([200, 100, 200]);
-    }, 100);
-  };
-
-  const handleConfirmation = (confirmed: boolean) => {
-    if (confirmed) {
-      if (confirmationState.type === "checkmate") {
-        handleCheckmate();
-      } else if (confirmationState.type === "draw") {
-        handleDraw();
+      // Set game summary
+      if (reason === "draw") {
+        useStatsStore.getState().setGameSummary("draw", "by agreement");
+      } else if (reason === "timeout") {
+        useStatsStore.getState().setGameSummary(winner, "timeout");
+      } else {
+        useStatsStore.getState().setGameSummary(winner, reason);
       }
+
+      // Show the game summary after a short delay to ensure stats are updated
+      setTimeout(() => {
+        setShowSummary(true);
+        playGameEnd();
+        vibrate([200, 100, 200]);
+      }, 100);
+    },
+    [
+      activePlayer,
+      pauseTimer,
+      whiteTimeRemaining,
+      blackTimeRemaining,
+      playGameEnd,
+    ]
+  );
+
+  const handleConfirmation = useCallback(
+    (confirmed: boolean) => {
+      if (confirmed) {
+        if (confirmationState.type === "checkmate") {
+          handleCheckmate();
+        } else if (confirmationState.type === "draw") {
+          handleDraw();
+        }
+      }
+      setConfirmationState({ isOpen: false, type: null, player: null });
+    },
+    [confirmationState, handleCheckmate, handleDraw]
+  );
+
+  // Double tap and long press handlers
+  const doubleTapHandler = useCallback(() => {
+    if (activePlayer) {
+      handleCheck();
     }
-    setConfirmationState({ isOpen: false, type: null, player: null });
+  }, [activePlayer, handleCheck]);
+
+  const longPressHandler = useCallback(() => {
+    if (activePlayer) {
+      setConfirmationState({
+        isOpen: true,
+        type: "checkmate",
+        player: activePlayer,
+      });
+    }
+  }, [activePlayer]);
+
+  const doubleTap = useDoubleTap(doubleTapHandler, 300);
+  const longPress = useLongPress(longPressHandler, 3000);
+
+  // Combine gesture handlers
+  const gestureHandlers = {
+    ...doubleTap,
+    ...longPress,
+    onClick: handlePlayerMove,
   };
 
   // Keyboard shortcuts

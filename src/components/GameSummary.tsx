@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
 import { Clock, Trophy, Swords, Crown, Play, Home, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip } from "./ui/CustomTooltip";
 import { type PlayerStats, type MoveRecord } from "@/stores/statsStore";
 
 interface GameSummaryProps {
@@ -50,10 +51,19 @@ const StatCard = ({
     animate={{ opacity: 1, y: 0 }}
     className="bg-neutral-800/50 backdrop-blur-sm p-4 rounded-lg border border-white/5"
   >
-    <div className="space-y-1">
-      <p className="text-sm text-neutral-400">{label}</p>
-      <p className="text-lg font-semibold text-white">{value}</p>
-    </div>
+    {tooltip ? (
+      <Tooltip text={tooltip}>
+        <div className="space-y-1">
+          <p className="text-sm text-neutral-400">{label}</p>
+          <p className="text-lg font-semibold text-white">{value}</p>
+        </div>
+      </Tooltip>
+    ) : (
+      <div className="space-y-1">
+        <p className="text-sm text-neutral-400">{label}</p>
+        <p className="text-lg font-semibold text-white">{value}</p>
+      </div>
+    )}
   </motion.div>
 );
 
@@ -62,28 +72,24 @@ interface PhaseStatsProps {
 }
 
 const PhaseStats = ({ stats }: PhaseStatsProps) => {
-  const totalTime = stats.totalTimeUsed;
   const phaseData = [
     {
       phase: "Opening",
       time: stats.phaseStats.opening.totalTime,
-      moves: stats.phaseStats.opening.moveCount,
     },
     {
       phase: "Middlegame",
       time: stats.phaseStats.middlegame.totalTime,
-      moves: stats.phaseStats.middlegame.moveCount,
     },
     {
       phase: "Endgame",
       time: stats.phaseStats.endgame.totalTime,
-      moves: stats.phaseStats.endgame.moveCount,
     },
   ];
 
   return (
     <div className="space-y-2">
-      {phaseData.map(({ phase, time, moves }) => (
+      {phaseData.map(({ phase, time }) => (
         <div key={phase} className="space-y-1">
           <div className="flex justify-between text-sm">
             <span className="text-neutral-400">{phase}</span>
@@ -92,7 +98,7 @@ const PhaseStats = ({ stats }: PhaseStatsProps) => {
           <div className="h-2 bg-neutral-800 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-              style={{ width: `${(time / totalTime) * 100}%` }}
+              style={{ width: `${(time / stats.totalTimeUsed) * 100}%` }}
             />
           </div>
         </div>

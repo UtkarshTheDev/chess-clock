@@ -169,13 +169,7 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     }));
   },
 
-  recordCheck: (player) => {
-    set(
-      (state) =>
-        ({
-          currentMoveStartTime: new Date(),
-        } as Partial<StatsState>)
-    );
+  recordCheck: (player: "white" | "black") => {
     get().recordMove(player, 0, "check");
   },
 
