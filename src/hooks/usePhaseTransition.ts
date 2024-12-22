@@ -5,7 +5,8 @@ export const usePhaseTransition = () => {
   const [currentPhase, setCurrentPhase] = useState<
     "opening" | "middleGame" | "endGame"
   >("opening");
-  const totalMoves = useStatsStore((state) => state.totalMoves);
+  const moveHistory = useStatsStore((state) => state.moveHistory);
+  const totalMoves = moveHistory.length;
 
   const phaseColors = {
     opening: "#4F46E5", // Indigo
