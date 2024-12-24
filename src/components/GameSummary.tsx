@@ -300,7 +300,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
     "overview"
   );
 
-
+ if (!gameSummary) return null;
 
   return (
     <motion.div
