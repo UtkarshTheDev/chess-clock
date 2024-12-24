@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
-import { Swords, Crown, Play, Home } from "lucide-react";
+import { Crown, Play, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "./ui/CustomTooltip";
 import { type PlayerStats, type MoveRecord } from "@/stores/statsStore";
@@ -300,130 +300,96 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
     "overview"
   );
 
-  if (!gameSummary) return null;
 
-  const { winner, endReason, whiteStats, blackStats } = gameSummary;
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case "overview":
-        return (
-          <div className="space-y-6">
-            <OverviewStats
-              stats={winner === "white" ? whiteStats : blackStats}
-            />
-          </div>
-        );
-      case "analysis":
-        return (
-          <div className="space-y-6">
-            <AnalysisStats
-              stats={winner === "white" ? whiteStats : blackStats}
-            />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
     >
-      <WinnerBanner winner={winner} reason={endReason} />
-      <div className="space-y-6 p-4 sm:p-6">
-        <div className="space-y-4">
-          <h2 className="text-lg sm:text-xl font-semibold text-white">
-            Game Summary
-          </h2>
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="w-full max-w-2xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        {/* Winner Banner */}
+        <WinnerBanner
+          winner={gameSummary.winner}
+          reason={gameSummary.endReason}
+        />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-neutral-400">Winner</h3>
-              <div className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-yellow-500" />
-                <span className="text-lg font-medium text-white">
-                  {winner === "draw" ? "Draw" : `${winner} wins!`}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-neutral-400">
-                End Reason
-              </h3>
-              <div className="flex items-center gap-2">
-                <Swords className="w-5 h-5 text-blue-500" />
-                <span className="text-lg font-medium text-white capitalize">
-                  {endReason}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <h3 className="text-lg font-semibold text-white">Statistics</h3>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                  activeTab === "overview"
-                    ? "bg-neutral-800 text-white"
-                    : "text-neutral-400 hover:text-white"
-                )}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab("analysis")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                  activeTab === "analysis"
-                    ? "bg-neutral-800 text-white"
-                    : "text-neutral-400 hover:text-white"
-                )}
-              >
-                Analysis
-              </button>
-            </div>
-          </div>
-
-          {renderContent()}
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-4 mt-8">
+        {/* Tabs */}
+        <div className="flex p-2 gap-2 border-b border-white/5">
           <button
-            onClick={onNewGame}
+            onClick={() => setActiveTab("overview")}
             className={cn(
-              "flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium",
-              "bg-gradient-to-r from-blue-600 to-blue-500",
-              "hover:shadow-lg hover:scale-105 transition-all",
-              "w-full sm:w-auto"
+              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
+              activeTab === "overview"
+                ? "bg-white/10 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-white/5"
             )}
           >
-            <Play className="w-5 h-5" />
-            Play Again
+            Overview
           </button>
           <button
+            onClick={() => setActiveTab("analysis")}
+            className={cn(
+              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
+              activeTab === "analysis"
+                ? "bg-white/10 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-white/5"
+            )}
+          >
+            Analysis
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="space-y-6">
+            {activeTab === "overview" ? (
+              <OverviewStats
+                stats={
+                  gameSummary.winner === "white"
+                    ? gameSummary.whiteStats
+                    : gameSummary.blackStats
+                }
+              />
+            ) : (
+              <AnalysisStats
+                stats={
+                  gameSummary.winner === "white"
+                    ? gameSummary.whiteStats
+                    : gameSummary.blackStats
+                }
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="p-4 border-t border-white/5 flex gap-3 flex-wrap sm:flex-nowrap">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={onExit}
-            className={cn(
-              "flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium",
-              "bg-neutral-800 hover:bg-neutral-700",
-              "transition-colors",
-              "w-full sm:w-auto"
-            )}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm font-medium"
           >
-            <Home className="w-5 h-5" />
-            Home
-          </button>
+            <Home className="w-4 h-4" />
+            Exit
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onNewGame}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-colors text-sm font-medium"
+          >
+            <Play className="w-4 h-4" />
+            New Game
+          </motion.button>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

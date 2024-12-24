@@ -208,7 +208,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         .recordMove(
           winner,
           0,
-          "normal",
+          reason === "checkmate" ? "checkmate" : "normal",
           winner === "white" ? whiteTimeRemaining : blackTimeRemaining
         );
 
@@ -339,41 +339,13 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
   const handleCheckmate = useCallback(() => {
     if (!activePlayer || !isRunning) return;
-
-    pauseTimer();
-    const timeRemaining =
-      activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining;
-
-    useStatsStore
-      .getState()
-      .recordMove(activePlayer, 0, "checkmate", timeRemaining);
-
-    setTimeout(() => {
-      setShowSummary(true);
-      playGameEnd();
-      vibrate([200, 100, 200]);
-    }, 100);
-  }, [
-    activePlayer,
-    isRunning,
-    pauseTimer,
-    whiteTimeRemaining,
-    blackTimeRemaining,
-    playGameEnd,
-  ]);
+    handleGameEnd("checkmate");
+  }, [activePlayer, isRunning, handleGameEnd]);
 
   const handleDraw = useCallback(() => {
-    if (!activePlayer || !isRunning) return;
-
-    pauseTimer();
-    useStatsStore.getState().setGameSummary("draw", "by agreement");
-
-    setTimeout(() => {
-      setShowSummary(true);
-      playGameEnd();
-      vibrate([200, 100, 200]);
-    }, 100);
-  }, [activePlayer, isRunning, pauseTimer, playGameEnd]);
+    if (!isRunning) return;
+    handleGameEnd("draw");
+  }, [isRunning, handleGameEnd]);
 
   const handleConfirmation = useCallback(
     (confirmed: boolean) => {
@@ -433,7 +405,14 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         Enter: () => handleCheck(),
         Tab: () => {
           e.preventDefault();
-          handleCheckmate();
+          pauseTimer();
+          setConfirmationState({
+            isOpen: true,
+            type: "checkmate",
+            player: activePlayer,
+          });
+          // Pause timer immediately
+          // handleCheckmate();
         },
         KeyP: () => {
           if (isRunning) {
@@ -459,6 +438,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     handleCheckmate,
     pauseTimer,
     resumeTimer,
+    activePlayer,
   ]);
 
   const renderTimerSquare = (player: "white" | "black") => {
@@ -469,8 +449,8 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     return (
       <motion.div
         className={cn(
-          "flex-1 flex items-center justify-center",
-          "cursor-pointer select-none",
+          "flex-1 md:flex-row  flex items-center justify-center",
+          "cursor-pointer select-none md:h-full h-[40vh]",
           isActive ? "opacity-100" : "opacity-50",
           getPhaseBasedStyle()
         )}
@@ -497,7 +477,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   );
 
   const MobileControls = () => (
-    <div className="md:hidden flex items-center gap-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+    <div className="md:hidden flex items-center gap-4 my-4 mb-6 justify-center ">
       <ControlButton
         onClick={isRunning ? pauseTimer : resumeTimer}
         icon={isRunning ? <Pause /> : <Play />}
@@ -524,7 +504,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     return (
       <motion.div
         className={cn(
-          "w-full max-w-[40%] max-h-[60vh] h-full",
+          "w-full max-w-[98%] md:max-h-[60vh] h-full",
           "relative cursor-pointer rounded-2xl",
           "transition-all duration-300",
           !isActive && (player === "white" ? "bg-white" : "bg-black"),
@@ -533,17 +513,17 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           isActive && phaseColor,
           !isActive && "border-2 border-neutral-700",
           "shadow-lg backdrop-blur-sm",
-          "sm:max-w-[45%] md:max-w-[40%]"
+          "sm:max-w-[90%] md:max-w-[90%] max-h-[45vh] "
         )}
         animate={{
           scale: isActive ? 1.05 : 1,
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className=" flex items-center justify-center h-full">
           <span
             className={cn(
-              "font-sourGummy text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold",
+              "font-sourGummy text-8xl lg:text-9xl font-bold",
               player === "white" ? "text-black" : "text-white",
               isActive && player === "white" && "text-white",
               isActive && player === "black" && "text-black"
@@ -598,13 +578,15 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   };
 
   return (
-    <motion.div className="max-sm:h-full w-full h-[93vh] relative overflow-hidden">
+    <motion.div className="h-full w-full md:h-[93vh]">
       <div className="relative h-full flex flex-col">
-        {renderTimerSquare("white")}
-        {renderTimerSquare("black")}
+        <div className="md:flex max-md:flex-col  h-full w-full">
+          {renderTimerSquare("black")}
 
-        <DesktopControls />
-        <MobileControls />
+          <DesktopControls />
+          <MobileControls />
+          {renderTimerSquare("white")}
+        </div>
 
         <div className="hidden md:block absolute bottom-6 left-1/2 -translate-x-1/2">
           <KeyboardShortcuts />
