@@ -1,7 +1,8 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
-import { Crown, Play, Home } from "lucide-react";
+import { useTimerStore } from "@/stores/timerStore";
+import { Crown, Play, Home, Handshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "./ui/CustomTooltip";
 import { type PlayerStats, type MoveRecord } from "@/stores/statsStore";
@@ -14,9 +15,11 @@ interface GameSummaryProps {
 const WinnerBanner = ({
   winner,
   reason,
+  timerType,
 }: {
   winner: string;
   reason: string;
+  timerType: "fischer" | "standard" | "bronstein";
 }) => (
   <motion.div
     initial={{ opacity: 0, y: -20 }}
@@ -29,11 +32,24 @@ const WinnerBanner = ({
       transition={{ delay: 0.2 }}
       className="flex items-center justify-center gap-3 mb-2"
     >
-      <Crown className="w-8 h-8 text-amber-400" />
-      <h2 className="text-2xl font-bold text-white">{winner} Wins!</h2>
-      <Crown className="w-8 h-8 text-amber-400" />
+      {winner === "draw" ? (
+        <Handshake className="w-8 h-8 text-blue-400" />
+      ) : (
+        <Crown className="w-8 h-8 text-amber-400" />
+      )}
+      <h2 className="text-2xl font-bold text-white">
+        {winner === "draw" ? "Draw" : `${winner} Wins!`}
+      </h2>
+      {winner === "draw" ? (
+        <Handshake className="w-8 h-8 text-blue-400" />
+      ) : (
+        <Crown className="w-8 h-8 text-amber-400" />
+      )}
     </motion.div>
     <p className="text-neutral-400">{reason}</p>
+    <div className="mt-2 text-sm text-neutral-500">
+      Timer Type: {timerType.charAt(0).toUpperCase() + timerType.slice(1)}
+    </div>
   </motion.div>
 );
 
@@ -296,11 +312,12 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
 
 const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
   const { gameSummary } = useStatsStore();
-  const [activeTab, setActiveTab] = useState<"overview" | "analysis">(
-    "overview"
-  );
+  const { type: timerType } = useTimerStore();
+  const [activeTab, setActiveTab] = useState<"overview" | "analysis">("overview");
 
- if (!gameSummary) return null;
+  if (!gameSummary) return null;
+
+  const { winner, endReason, whiteStats, blackStats } = gameSummary;
 
   return (
     <motion.div
@@ -313,13 +330,12 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
         animate={{ scale: 1, opacity: 1 }}
         className="w-full max-w-2xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[90vh] overflow-hidden flex flex-col"
       >
-        {/* Winner Banner */}
         <WinnerBanner
-          winner={gameSummary.winner}
-          reason={gameSummary.endReason}
+          winner={winner}
+          reason={endReason}
+          timerType={timerType}
         />
 
-        {/* Tabs */}
         <div className="flex p-2 gap-2 border-b border-white/5">
           <button
             onClick={() => setActiveTab("overview")}
@@ -345,30 +361,28 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
             {activeTab === "overview" ? (
               <OverviewStats
                 stats={
-                  gameSummary.winner === "white"
-                    ? gameSummary.whiteStats
-                    : gameSummary.blackStats
+                  winner === "white"
+                    ? whiteStats
+                    : blackStats
                 }
               />
             ) : (
               <AnalysisStats
                 stats={
-                  gameSummary.winner === "white"
-                    ? gameSummary.whiteStats
-                    : gameSummary.blackStats
+                  winner === "white"
+                    ? whiteStats
+                    : blackStats
                 }
               />
             )}
           </div>
         </div>
 
-        {/* Actions */}
         <div className="p-4 border-t border-white/5 flex gap-3 flex-wrap sm:flex-nowrap">
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -386,12 +400,12 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-colors text-sm font-medium"
           >
             <Play className="w-4 h-4" />
-            New Game
-          </motion.button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
+                        New Game
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              );
+            };
 
-export default GameSummary;
+            export default GameSummary;
