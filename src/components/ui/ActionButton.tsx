@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 
 interface ActionButtonProps {
   variant: "check" | "checkmate" | "draw";
@@ -18,16 +18,16 @@ export const ActionButton = ({
 }: ActionButtonProps) => {
   const variants = {
     check: {
-      base: "bg-gradient-to-br from-emerald-500/40 to-emerald-600/50 border-emerald-500/50 text-emerald-100 hover:from-emerald-500/50 hover:to-emerald-600/60 shadow-emerald-900/20",
-      disabled: "bg-neutral-800/40 border-neutral-700/40 text-neutral-500",
+      base: "bg-gradient-to-br from-emerald-500/70 to-emerald-600/80 border-emerald-500/70 text-emerald-50 hover:from-emerald-500/80 hover:to-emerald-600/90 shadow-emerald-900/30",
+      disabled: "bg-neutral-800/50 border-neutral-700/50 text-neutral-500",
     },
     checkmate: {
-      base: "bg-gradient-to-br from-amber-500/40 to-amber-600/50 border-amber-500/50 text-amber-100 hover:from-amber-500/50 hover:to-amber-600/60 shadow-amber-900/20",
-      disabled: "bg-neutral-800/40 border-neutral-700/40 text-neutral-500",
+      base: "bg-gradient-to-br from-amber-500/70 to-amber-600/80 border-amber-500/70 text-amber-50 hover:from-amber-500/80 hover:to-amber-600/90 shadow-amber-900/30",
+      disabled: "bg-neutral-800/50 border-neutral-700/50 text-neutral-500",
     },
     draw: {
-      base: "bg-gradient-to-br from-blue-500/40 to-blue-600/50 border-blue-500/50 text-blue-100 hover:from-blue-500/50 hover:to-blue-600/60 shadow-blue-900/20",
-      disabled: "bg-neutral-800/40 border-neutral-700/40 text-neutral-500",
+      base: "bg-gradient-to-br from-blue-500/70 to-blue-600/80 border-blue-500/70 text-blue-50 hover:from-blue-500/80 hover:to-blue-600/90 shadow-blue-900/30",
+      disabled: "bg-neutral-800/50 border-neutral-700/50 text-neutral-500",
     },
   };
 

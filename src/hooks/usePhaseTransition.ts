@@ -9,9 +9,9 @@ export const usePhaseTransition = () => {
   const totalMoves = moveHistory.length;
 
   const phaseColors = {
-    opening: "#4F46E5", // Indigo
-    middlegame: "#0EA5E9", // Sky Blue
-    endgame: "#A855F7", // Purple
+    opening: "bg-blue-500/20", // Light blue background
+    middlegame: "bg-yellow-500/20", // Light yellow background
+    endgame: "bg-red-500/20", // Light red background
   } as const;
 
   useEffect(() => {

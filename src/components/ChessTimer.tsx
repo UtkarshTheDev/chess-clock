@@ -64,23 +64,6 @@ const formatTime = (seconds: number): string => {
     .padStart(2, "0")}`;
 };
 
-const getTimeBasedColor = (
-  timeRemaining: number,
-  initialTime: number,
-  player: "white" | "black"
-) => {
-  const timePercentage = (timeRemaining / initialTime) * 100;
-
-  if (timePercentage <= 10) {
-    return "bg-gradient-to-br from-red-600/90 to-red-700/90 text-white";
-  } else if (timePercentage <= 50) {
-    return "bg-gradient-to-br from-yellow-500/90 to-yellow-600/90 text-black";
-  } else if (timePercentage >= 90) {
-    return "bg-gradient-to-br from-green-500/90 to-green-600/90 text-white";
-  }
-  return player === "white" ? "bg-white text-black" : "bg-black text-white";
-};
-
 interface ChessTimerProps {
   onReset?: () => void;
 }
@@ -389,13 +372,13 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   const getPhaseBasedStyle = useCallback(() => {
     switch (currentPhase) {
       case "opening":
-        return "border-blue-500";
+        return "bg-blue-500/10";  // Subtle blue background
       case "middlegame":
-        return "border-yellow-500";
+        return "bg-yellow-500/10"; // Subtle yellow background
       case "endgame":
-        return "border-red-500";
+        return "bg-purple-500/10"; // Subtle purple background
       default:
-        return "border-gray-500";
+        return "bg-gray-500/10"; // Subtle gray background
     }
   }, [currentPhase]);
 
@@ -424,15 +407,144 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     [activePlayer]
   );
 
+  // Get phase indicator style
+  const getPhaseInfo = useCallback(() => {
+    switch (currentPhase) {
+      case "opening":
+        return { 
+          color: "#4F46E5", 
+          label: "Opening Phase",
+          gradient: "bg-gradient-to-r from-blue-600 to-indigo-600",
+          icon: "♟" // Chess pawn for opening
+        };
+      case "middlegame":
+        return { 
+          color: "#0EA5E9", 
+          label: "Middle Game",
+          gradient: "bg-gradient-to-r from-sky-500 to-blue-500",
+          icon: "♞" // Chess knight for middle game
+        };
+      case "endgame":
+        return { 
+          color: "#A855F7", 
+          label: "End Game",
+          gradient: "bg-gradient-to-r from-purple-600 to-indigo-600",
+          icon: "♚" // Chess king for endgame
+        };
+      default:
+        return { 
+          color: "#6B7280", 
+          label: "Game",
+          gradient: "bg-gradient-to-r from-gray-600 to-gray-700",
+          icon: "♜" // Chess rook as default
+        };
+    }
+  }, [currentPhase]);
+
+  const phaseInfo = getPhaseInfo();
+
   const TimerSquare = ({
     player,
     time,
     isActive,
+    showPhaseIndicator,
+    isRunning,
   }: {
     player: "white" | "black";
     time: number;
     isActive: boolean;
+    showPhaseIndicator: boolean;
+    isRunning: boolean;
   }) => {
+    // Get time-based color for background
+    const getTimeBasedBackground = () => {
+      const timePercentage = (time / initialTime) * 100;
+      
+      if (timePercentage <= 10) {
+        // Critical time - vibrant red gradient
+        return "bg-gradient-to-br from-red-500 to-red-700 text-white";
+      } else if (timePercentage <= 50) {
+        // Warning time - vibrant yellow/amber gradient
+        return "bg-gradient-to-br from-amber-400 to-yellow-600 text-black";
+      } else if (timePercentage >= 90) {
+        // Plenty of time - vibrant green gradient
+        return "bg-gradient-to-br from-emerald-400 to-green-600 text-white";
+      }
+      
+      // Default colors based on player with subtle gradient
+      if (player === "white") {
+        return "bg-gradient-to-br from-gray-100 to-white text-black";
+      } else {
+        return "bg-gradient-to-br from-gray-900 to-black text-white";
+      }
+    };
+    
+    // Get player-specific background color
+    const getPlayerBackground = () => {
+      if (player === "white") {
+        return "bg-white text-black";
+      } else {
+        // Use a nice gradient for black background
+        return "bg-gradient-to-br from-gray-900 to-black text-white";
+      }
+    };
+    
+    // Get player-specific border color
+    const getPlayerBorderColor = () => {
+      // For black player, use a more visible border (light gray instead of pure black)
+      return player === "white" ? "border-white" : "border-gray-300";
+    };
+    
+    // Get time-based border color
+    const getTimeBasedBorderColor = () => {
+      const timePercentage = (time / initialTime) * 100;
+      
+      if (timePercentage <= 10) {
+        return "border-red-500";
+      } else if (timePercentage <= 50) {
+        return "border-yellow-400";
+      } else if (timePercentage >= 90) {
+        return "border-green-400";
+      }
+      
+      // Default border color - make white border more visible
+      return player === "white" ? "border-gray-400" : "border-gray-600";
+    };
+
+    // Get appropriate border color based on game state and active player
+    const getBorderColor = () => {
+      if (!isRunning) {
+        // When game is not running, use player color for border
+        return player === "white" ? "border-gray-400" : "border-gray-600";
+      } else if (isActive) {
+        // When game is running and this player is active, use player color for border
+        return player === "white" ? "border-white" : "border-gray-300";
+      } else {
+        // When game is running but this player is not active, use time-based border
+        // This ensures both black and white show time-based borders when not active
+        return getTimeBasedBorderColor();
+      }
+    };
+
+    // Get appropriate background color
+    const getBackground = () => {
+      if (!isRunning) {
+        // When game is not running, use player colors
+        return getPlayerBackground();
+      } else if (isActive) {
+        // When game is running and this player is active, use time-based background
+        // This ensures both black and white show time-based backgrounds when active
+        return getTimeBasedBackground();
+      } else {
+        // When game is running but this player is not active, use player colors
+        return getPlayerBackground();
+      }
+    };
+
+    // Determine if we need to add a background to action buttons for better contrast
+    // Apply to white background cards, whether active or not
+    const needsContrastBackground = player === "white";
+    
     return (
       <motion.div
         {...useDoubleTap(() => onDoubleTap(player))}
@@ -441,11 +553,17 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           "w-full max-w-[98%] md:max-h-[60vh] h-full",
           "relative cursor-pointer rounded-2xl",
           "transition-all duration-300",
-          getTimeBasedColor(time, initialTime, player),
-          isActive && "scale-105 ring-2 ring-white/50",
-          isActive && "border-4",
-          isActive && phaseColor,
-          !isActive && "border-2 border-neutral-700",
+          // Use the dynamic background function
+          getBackground(),
+          // Scale up active card and increase z-index to avoid border overlap
+          isActive && "scale-105 z-10",
+          // Border: use dynamic border color logic
+          isActive ? "border-4" : "border-2",
+          getBorderColor(),
+          // Add subtle ring effect for better visibility
+          isActive ? (player === "black" ? "ring-1 ring-gray-300/30" : "") : "",
+          // Add additional outline for white timer when not active to improve border visibility
+          !isActive && player === "white" ? "ring-1 ring-gray-400/50" : "",
           "shadow-lg backdrop-blur-sm",
           "sm:max-w-[90%] md:max-w-[90%] max-h-[45vh]"
         )}
@@ -457,7 +575,11 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         </div>
 
         <motion.div
-          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4"
+          className={cn(
+            "absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4",
+            // Add semi-transparent background for buttons on white background for better contrast
+            needsContrastBackground ? "p-2 rounded-lg bg-gray-800/30 backdrop-blur-md" : ""
+          )}
           initial={false}
         >
           <ActionButton
@@ -500,21 +622,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     );
   };
 
-  const DesktopControls = () => (
-    <div className="hidden md:flex absolute top-6 left-1/2 -translate-x-1/2 gap-8">
-      <ControlButton
-        onClick={handleReset}
-        icon={<RefreshCcw />}
-        label="Reset"
-      />
-      <ControlButton
-        onClick={isRunning ? pauseTimer : resumeTimer}
-        icon={isRunning ? <Pause /> : <Play />}
-        label={isRunning ? "Pause" : "Play"}
-      />
-    </div>
-  );
-
   const MobileControls = () => (
     <div className="md:hidden flex items-center gap-4 my-4 mb-6 justify-center">
       <ControlButton
@@ -532,39 +639,75 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   return (
     <motion.div className="h-full w-full md:h-[93vh]">
       <div className="relative h-full flex flex-col">
+        {/* Top Control Bar with Phase Indicator and Controls */}
+        <div className="absolute top-6 left-0 right-0 z-10 flex items-center justify-between px-6">
+          {/* Reset Button */}
+          <div className="hidden md:block">
+            <ControlButton
+              onClick={handleReset}
+              icon={<RefreshCcw />}
+              label="Reset"
+            />
+          </div>
+          
+          {/* Central Phase Indicator */}
+          <div className="flex-grow flex justify-center">
+            <div 
+              className={cn(
+                "px-4 py-2 rounded-full text-sm font-medium shadow-md",
+                "flex items-center gap-2",
+                phaseInfo.gradient
+              )}
+            >
+              <span className="text-white text-lg">{phaseInfo.icon}</span>
+              <span className="text-white">{phaseInfo.label}</span>
+            </div>
+          </div>
+          
+          {/* Play/Pause Button */}
+          <div className="hidden md:block">
+            <ControlButton
+              onClick={isRunning ? pauseTimer : resumeTimer}
+              icon={isRunning ? <Pause /> : <Play />}
+              label={isRunning ? "Pause" : "Play"}
+            />
+          </div>
+        </div>
+        
         <div className="md:flex max-md:flex-col h-full w-full">
-          {/* Black Timer */}
+          {/* Black Timer Container - No phase background */}
           <div
             className={cn(
               "flex-1 md:flex-row flex items-center justify-center",
               "cursor-pointer select-none md:h-full h-[40vh]",
-              activePlayer === "black" ? `opacity-100 ${getPhaseBasedStyle()}` : "opacity-50",
-
+              activePlayer === "black" ? "opacity-100" : "opacity-50"
             )}
           >
             <TimerSquare
               player="black"
               time={blackTimeRemaining}
               isActive={activePlayer === "black"}
+              showPhaseIndicator={false}
+              isRunning={isRunning}
             />
           </div>
 
-          <DesktopControls />
           <MobileControls />
 
-          {/* White Timer */}
+          {/* White Timer Container - No phase background */}
           <div
             className={cn(
               "flex-1 md:flex-row flex items-center justify-center",
               "cursor-pointer select-none md:h-full h-[40vh]",
-              activePlayer === "white" ?  `opacity- 100 ${getPhaseBasedStyle()}` : "opacity-50",
-
+              activePlayer === "white" ? "opacity-100" : "opacity-50"
             )}
           >
             <TimerSquare
               player="white"
               time={whiteTimeRemaining}
               isActive={activePlayer === "white"}
+              showPhaseIndicator={false}
+              isRunning={isRunning}
             />
           </div>
         </div>
