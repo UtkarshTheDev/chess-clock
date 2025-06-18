@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
 import { useTimerStore } from "@/stores/timerStore";
@@ -19,7 +19,7 @@ const WinnerBanner = ({
 }: {
   winner: string;
   reason: string;
-  timerType: "fischer" | "standard" | "bronstein";
+  timerType: "normal" | "fischer" | "bronstein";
 }) => (
   <motion.div
     initial={{ opacity: 0, y: -20 }}

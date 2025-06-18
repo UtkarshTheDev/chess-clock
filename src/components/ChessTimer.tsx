@@ -173,6 +173,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     switchActivePlayer,
     pauseTimer,
     resumeTimer,
+    initialTime,
   } = useTimerStore();
 
   const [showSummary, setShowSummary] = useState(false);
@@ -185,7 +186,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     }
   );
 
-  const initialTime = 15 * 60; // 15 minutes
   const { playMove, playCheck, playGameEnd, playGameStart } = useSoundEffects();
   const { currentPhase, phaseColor } = usePhaseTransition();
 
@@ -237,11 +237,11 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     if (onReset) {
       onReset();
     }
-    initializeTime(15);
+    initializeTime(initialTime / 60);
     setShowSummary(false);
     playGameStart();
     useStatsStore.getState().resetStats();
-  }, [onReset, initializeTime, playGameStart]);
+  }, [onReset, initializeTime, playGameStart, initialTime]);
 
   // Timer Effect
   useEffect(() => {
@@ -280,13 +280,19 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
   const handlePlayerMove = useCallback(() => {
     if (activePlayer && isRunning) {
+      // Get the actual move time from the timerStore
+      const lastMoveTime = useTimerStore.getState().lastMoveStartTime;
+      const moveTime = lastMoveTime
+        ? (Date.now() - lastMoveTime) / 1000
+        : 0;
+        
       playMove();
       switchActivePlayer();
       useStatsStore
         .getState()
         .recordMove(
           activePlayer,
-          0,
+          moveTime,
           "normal",
           activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining
         );
@@ -302,11 +308,34 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
   const handleCheck = useCallback(() => {
     if (activePlayer && isRunning) {
+      // Get the actual move time from the timerStore
+      const lastMoveTime = useTimerStore.getState().lastMoveStartTime;
+      const moveTime = lastMoveTime
+        ? (Date.now() - lastMoveTime) / 1000
+        : 0;
+        
       playCheck();
       vibrate([100]);
       switchActivePlayer();
+      
+      // Record the check move with actual time
+      useStatsStore
+        .getState()
+        .recordMove(
+          activePlayer,
+          moveTime,
+          "check",
+          activePlayer === "white" ? whiteTimeRemaining : blackTimeRemaining
+        );
     }
-  }, [activePlayer, isRunning, playCheck, switchActivePlayer]);
+  }, [
+    activePlayer,
+    isRunning,
+    playCheck,
+    switchActivePlayer,
+    whiteTimeRemaining,
+    blackTimeRemaining,
+  ]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -361,9 +390,9 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     switch (currentPhase) {
       case "opening":
         return "border-blue-500";
-      case "middleGame":
+      case "middlegame":
         return "border-yellow-500";
-      case "endGame":
+      case "endgame":
         return "border-red-500";
       default:
         return "border-gray-500";
@@ -374,13 +403,10 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   const onDoubleTap = useCallback(
     (player: "white" | "black") => {
       if (player === activePlayer) {
-        handleGameEnd("check");
-        playCheck();
-        vibrate([100]);
-        switchActivePlayer();
+        handleCheck();
       }
     },
-    [activePlayer, handleGameEnd, playCheck, switchActivePlayer]
+    [activePlayer, handleCheck]
   );
 
   // Handle long press for checkmate
@@ -585,7 +611,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           <GameSummary
             onNewGame={() => {
               if (onReset) onReset();
-              initializeTime(15);
+              initializeTime(initialTime / 60);
               setShowSummary(false);
               playGameStart();
               useStatsStore.getState().resetStats();

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTimerTypeStore, TimerType } from "@/stores/timerTypeStore";
 import { ChessTimer } from "@/components/ChessTimer";
+import { useStatsStore } from "@/stores/statsStore";
 
 type GameState = "home" | "playing";
 
@@ -71,12 +72,23 @@ export default function Home() {
   const [gameState, setGameState] = useState<GameState>("home");
 
   const setTimer = () => {
+    // Initialize the time in timerStore
     initializeTime(time);
+    
+    // Get the selected timer type configuration
     const selectedTypeObj = types.find((t) => t.type === selectedType);
     if (selectedTypeObj) {
+      // Set the type and increment in timerTypeStore
       setTimerType(selectedTypeObj.type);
       setIncrement(selectedTypeObj.increment);
+      
+      // Also set the same values in timerStore for consistency
+      useTimerStore.getState().setTimerType(selectedTypeObj.type);
+      useTimerStore.getState().setIncrement(selectedTypeObj.increment);
     }
+    
+    // Start the stats tracking
+    useStatsStore.getState().startGame();
   };
 
   const startGame = async () => {

@@ -93,22 +93,27 @@ export const useStatsStore = create<StatsState>((set, get) => ({
   ) => {
     const state = get();
     const currentTime = new Date();
-    const moveTime = state.currentMoveStartTime
-      ? (currentTime.getTime() - state.currentMoveStartTime.getTime()) / 1000
-      : time;
+    // Use the provided time if it's greater than 0, otherwise try to calculate from currentMoveStartTime
+    const moveTime = time > 0 
+      ? time 
+      : state.currentMoveStartTime
+        ? (currentTime.getTime() - state.currentMoveStartTime.getTime()) / 1000
+        : 0;
 
     const playerStats =
       player === "white" ? state.whiteStats : state.blackStats;
     const totalMoves = playerStats.moveHistory.length;
 
     // Calculate initial time (game duration) from first move's timeRemaining + time used
+    // or use a default if no moves yet
     const firstMove = playerStats.moveHistory[0];
     const initialTime = firstMove
       ? firstMove.timeRemaining + firstMove.time
-      : timeRemaining + moveTime;
+      : timeRemaining + moveTime > 0 
+        ? timeRemaining + moveTime 
+        : 900; // Default to 15 minutes if we can't calculate
 
     // Quick moves: less than 1% of game duration
-    // Slow moves: more than 5% of game duration
     const isQuickMove = moveTime < initialTime * 0.01;
 
     const phase =
@@ -136,12 +141,17 @@ export const useStatsStore = create<StatsState>((set, get) => ({
     const newFastestMove =
       totalMoves <= 1 ? moveTime : Math.min(currentFastestMove, moveTime);
 
+    // Ensure we don't divide by zero when calculating averages
+    const newMoveCount = totalMoves + 1;
+    const newPhaseCount = playerStats.phaseStats[phase].moveCount + 1;
+
     const updatedStats = {
       ...playerStats,
       totalTimeUsed: playerStats.totalTimeUsed + moveTime,
       timeRemaining,
-      averageTimePerMove:
-        (playerStats.totalTimeUsed + moveTime) / (totalMoves + 1),
+      averageTimePerMove: newMoveCount > 0
+        ? (playerStats.totalTimeUsed + moveTime) / newMoveCount
+        : 0,
       fastestMove: newFastestMove,
       slowestMove: Math.max(playerStats.slowestMove, moveTime),
       quickMoves: isQuickMove
@@ -151,10 +161,10 @@ export const useStatsStore = create<StatsState>((set, get) => ({
         ...playerStats.phaseStats,
         [phase]: {
           totalTime: playerStats.phaseStats[phase].totalTime + moveTime,
-          averageTime:
-            (playerStats.phaseStats[phase].totalTime + moveTime) /
-            (playerStats.phaseStats[phase].moveCount + 1),
-          moveCount: playerStats.phaseStats[phase].moveCount + 1,
+          averageTime: newPhaseCount > 0
+            ? (playerStats.phaseStats[phase].totalTime + moveTime) / newPhaseCount
+            : 0,
+          moveCount: newPhaseCount,
         },
       },
       moveHistory: [...playerStats.moveHistory, newMove],
@@ -174,16 +184,22 @@ export const useStatsStore = create<StatsState>((set, get) => ({
   },
 
   setGameSummary: (winner: "white" | "black" | "draw", reason: string) => {
+    const state = get();
+    const endTime = new Date();
+    
+    // Ensure we have a valid start time
+    const startTime = state.gameStartTime || new Date(endTime.getTime() - 60000); // Default to 1 minute ago if no start time
+    
     set({
       gameSummary: {
         winner,
         endReason: reason,
-        whiteStats: get().whiteStats,
-        blackStats: get().blackStats,
-        totalMoves: get().moveHistory.length,
-        gameStartTime: get().gameStartTime,
-        gameEndTime: new Date(),
-        timeRatio: calculateTimeRatio(get().whiteStats, get().blackStats),
+        whiteStats: state.whiteStats,
+        blackStats: state.blackStats,
+        totalMoves: state.moveHistory.length,
+        gameStartTime: startTime,
+        gameEndTime: endTime,
+        timeRatio: calculateTimeRatio(state.whiteStats, state.blackStats),
       },
     });
   },
@@ -208,6 +224,9 @@ export const useStatsStore = create<StatsState>((set, get) => ({
       state.recordMove(winner, 0, "checkmate");
     }
 
+    // Ensure we have a valid start time
+    const startTime = state.gameStartTime || new Date(endTime.getTime() - 60000); // Default to 1 minute ago if no start time
+
     set({
       gameEndTime: endTime,
       gameSummary: {
@@ -216,11 +235,9 @@ export const useStatsStore = create<StatsState>((set, get) => ({
         whiteStats: state.whiteStats,
         blackStats: state.blackStats,
         totalMoves: state.moveHistory.length,
-        gameStartTime: state.gameStartTime,
+        gameStartTime: startTime,
         gameEndTime: endTime,
-        timeRatio:
-          state.whiteStats.totalTimeUsed /
-          (state.blackStats.totalTimeUsed || 1),
+        timeRatio: calculateTimeRatio(state.whiteStats, state.blackStats),
       },
     } as Partial<StatsState>);
   },
@@ -239,5 +256,14 @@ export const useStatsStore = create<StatsState>((set, get) => ({
 }));
 
 function calculateTimeRatio(whiteStats: PlayerStats, blackStats: PlayerStats) {
-  return whiteStats.totalTimeUsed / (blackStats.totalTimeUsed || 1);
+  // Avoid division by zero and handle edge cases
+  if (blackStats.totalTimeUsed <= 0 && whiteStats.totalTimeUsed <= 0) {
+    return 1; // Equal ratio if both are 0
+  }
+  
+  if (blackStats.totalTimeUsed <= 0) {
+    return 10; // Arbitrary high number if black used no time
+  }
+  
+  return whiteStats.totalTimeUsed / blackStats.totalTimeUsed;
 }

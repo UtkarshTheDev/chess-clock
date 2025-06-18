@@ -5,7 +5,7 @@ interface TimerState {
   blackTimeRemaining: number;
   isRunning: boolean;
   activePlayer: "white" | "black" | null;
-  type: "fischer" | "standard" | "bronstein";
+  type: "normal" | "fischer" | "bronstein";
   increment: number;
   bronsteinDelay: number;
   lastMoveStartTime: number | null;
@@ -22,7 +22,7 @@ interface TimerState {
   addIncrement: (player: "white" | "black", amount: number) => void;
   decrementWhiteTime: () => void;
   decrementBlackTime: () => void;
-  setTimerType: (type: "fischer" | "standard" | "bronstein") => void;
+  setTimerType: (type: "normal" | "fischer" | "bronstein") => void;
   setIncrement: (seconds: number) => void;
   setBronsteinDelay: (seconds: number) => void;
 }
@@ -46,7 +46,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
     blackTimeRemaining: 0,
     isRunning: false,
     activePlayer: null,
-    type: "standard" as const,
+    type: "normal" as const,
     increment: 0,
     bronsteinDelay: 0,
     lastMoveStartTime: null,
@@ -152,7 +152,7 @@ export const useTimerStore = create<TimerState>((set, get) => {
         lastMoveStartTime: null,
       }),
 
-    setTimerType: (type: "fischer" | "standard" | "bronstein") => set({ type }),
+    setTimerType: (type: "normal" | "fischer" | "bronstein") => set({ type }),
 
     setIncrement: (seconds: number) => set({ increment: seconds }),
 

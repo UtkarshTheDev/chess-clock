@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useStatsStore } from "@/stores/statsStore";
 import { ChevronLeft, Clock, Check, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
