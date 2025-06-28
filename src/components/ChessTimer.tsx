@@ -170,7 +170,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   );
 
   const { playMove, playCheck, playGameEnd, playGameStart } = useSoundEffects();
-  const { currentPhase, phaseColor } = usePhaseTransition();
+  const { currentPhase } = usePhaseTransition();
 
   const handleGameEnd = useCallback(
     (reason: "check" | "checkmate" | "draw" | "timeout") => {
@@ -369,19 +369,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     activePlayer,
   ]);
 
-  const getPhaseBasedStyle = useCallback(() => {
-    switch (currentPhase) {
-      case "opening":
-        return "bg-blue-500/10";  // Subtle blue background
-      case "middlegame":
-        return "bg-yellow-500/10"; // Subtle yellow background
-      case "endgame":
-        return "bg-purple-500/10"; // Subtle purple background
-      default:
-        return "bg-gray-500/10"; // Subtle gray background
-    }
-  }, [currentPhase]);
-
   // Handle double tap for check
   const onDoubleTap = useCallback(
     (player: "white" | "black") => {
@@ -447,7 +434,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     player,
     time,
     isActive,
-    showPhaseIndicator,
     isRunning,
   }: {
     player: "white" | "black";
@@ -487,12 +473,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         // Use a nice gradient for black background
         return "bg-gradient-to-br from-gray-900 to-black text-white";
       }
-    };
-    
-    // Get player-specific border color
-    const getPlayerBorderColor = () => {
-      // For black player, use a more visible border (light gray instead of pure black)
-      return player === "white" ? "border-white" : "border-gray-300";
     };
     
     // Get time-based border color
