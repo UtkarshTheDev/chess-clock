@@ -564,35 +564,44 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         >
           <ActionButton
             variant="check"
-            onClick={() => isActive && handleCheck()}
+            onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
+              e?.stopPropagation();
+              if (isActive) {
+                handleCheck();
+              }
+            }}
             disabled={!isActive}
             icon={<Check className="w-5 h-5" />}
             label="Check"
           />
           <ActionButton
             variant="checkmate"
-            onClick={() =>
-              isActive &&
-              setConfirmationState({
-                isOpen: true,
-                type: "checkmate",
-                player,
-              })
-            }
+            onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
+              e?.stopPropagation();
+              if (isActive) {
+                setConfirmationState({
+                  isOpen: true,
+                  type: "checkmate",
+                  player,
+                });
+              }
+            }}
             disabled={!isActive}
             icon={<Trophy className="w-5 h-5" />}
             label="Checkmate"
           />
           <ActionButton
             variant="draw"
-            onClick={() =>
-              isActive &&
-              setConfirmationState({
-                isOpen: true,
-                type: "draw",
-                player,
-              })
-            }
+            onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
+              e?.stopPropagation();
+              if (isActive) {
+                setConfirmationState({
+                  isOpen: true,
+                  type: "draw",
+                  player,
+                });
+              }
+            }}
             disabled={!isActive}
             icon={<Handshake className="w-5 h-5" />}
             label="Draw"

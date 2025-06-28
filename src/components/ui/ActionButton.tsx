@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 interface ActionButtonProps {
   variant: "check" | "checkmate" | "draw";
-  onClick: () => void;
+  onClick: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
   icon: React.ReactNode;
   label: string;
