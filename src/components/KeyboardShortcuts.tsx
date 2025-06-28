@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 
 const shortcuts = [
-  { key: "Space", action: "Switch Turn" },
-  { key: "Enter", action: "Check" },
+  { key: "Space", action: "Normal Move" },
+  { key: "Enter", action: "Check Move" },
   { key: "Tab", action: "Checkmate" },
   { key: "P", action: "Play/Pause" },
 ] as const;

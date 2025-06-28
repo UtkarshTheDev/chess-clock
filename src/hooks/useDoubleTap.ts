@@ -2,16 +2,30 @@ import { useCallback, useRef } from "react";
 
 export default function useDoubleTap(onDoubleTap: () => void, delay = 300) {
   const lastTap = useRef<number>(0);
+  const tapCount = useRef<number>(0);
+  const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const handleTouchStart = useCallback(() => {
+  const handleTap = useCallback(() => {
     const now = Date.now();
-    if (now - lastTap.current < delay) {
+    tapCount.current += 1;
+
+    if (tapCount.current === 1) {
+      // First tap - start timer
+      timeoutRef.current = setTimeout(() => {
+        tapCount.current = 0;
+      }, delay);
+    } else if (tapCount.current === 2) {
+      // Second tap - trigger double tap
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      tapCount.current = 0;
       onDoubleTap();
     }
-    lastTap.current = now;
   }, [onDoubleTap, delay]);
 
   return {
-    onTouchStart: handleTouchStart,
+    onTouchStart: handleTap,
+    onClick: handleTap,
   };
 }

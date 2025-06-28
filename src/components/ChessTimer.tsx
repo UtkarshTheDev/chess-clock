@@ -14,8 +14,7 @@ import {
 import GameSummary from "@/components/GameSummary";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { vibrate } from "@/utils/haptics";
-import useDoubleTap from "@/hooks/useDoubleTap";
-import useLongPress from "@/hooks/useLongPress";
+import useGestures from "@/hooks/useGestures";
 import { cn } from "@/lib/utils";
 import { usePhaseTransition } from "@/hooks/usePhaseTransition";
 import { KeyboardShortcuts } from "./KeyboardShortcuts";
@@ -161,6 +160,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
   const [showSummary, setShowSummary] = useState(false);
   const [showGestureHelp, setShowGestureHelp] = useState(false);
+  const [gestureNotification, setGestureNotification] = useState<string | null>(null);
   const [confirmationState, setConfirmationState] = useState<ConfirmationState>(
     {
       isOpen: false,
@@ -369,20 +369,39 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     activePlayer,
   ]);
 
-  // Handle double tap for check
-  const onDoubleTap = useCallback(
+  // Show gesture notification
+  const showGestureNotification = useCallback((message: string) => {
+    setGestureNotification(message);
+    setTimeout(() => setGestureNotification(null), 1500);
+  }, []);
+
+  // Handle single tap for normal move
+  const handleSingleTap = useCallback(
     (player: "white" | "black") => {
-      if (player === activePlayer) {
+      if (player === activePlayer && isRunning) {
+        showGestureNotification("Normal Move");
+        handlePlayerMove();
+      }
+    },
+    [activePlayer, isRunning, handlePlayerMove, showGestureNotification]
+  );
+
+  // Handle double tap for check
+  const handleDoubleTap = useCallback(
+    (player: "white" | "black") => {
+      if (player === activePlayer && isRunning) {
+        showGestureNotification("Check Move");
         handleCheck();
       }
     },
-    [activePlayer, handleCheck]
+    [activePlayer, isRunning, handleCheck, showGestureNotification]
   );
 
   // Handle long press for checkmate
-  const onLongPress = useCallback(
+  const handleLongPress = useCallback(
     (player: "white" | "black") => {
-      if (player === activePlayer) {
+      if (player === activePlayer && isRunning) {
+        showGestureNotification("Checkmate");
         setConfirmationState({
           isOpen: true,
           type: "checkmate",
@@ -391,7 +410,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         vibrate([200]);
       }
     },
-    [activePlayer]
+    [activePlayer, isRunning, showGestureNotification]
   );
 
   // Get phase indicator style
@@ -442,6 +461,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     showPhaseIndicator: boolean;
     isRunning: boolean;
   }) => {
+    const [isGestureActive, setIsGestureActive] = useState(false);
     // Get time-based color for background
     const getTimeBasedBackground = () => {
       const timePercentage = (time / initialTime) * 100;
@@ -525,10 +545,21 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     // Apply to white background cards, whether active or not
     const needsContrastBackground = player === "white";
     
+    const gestureHandlers = useGestures({
+      onSingleTap: () => handleSingleTap(player),
+      onDoubleTap: () => handleDoubleTap(player),
+      onLongPress: () => handleLongPress(player),
+      onGestureStart: () => {
+        if (isActive && isRunning) {
+          setIsGestureActive(true);
+        }
+      },
+      onGestureEnd: () => setIsGestureActive(false),
+    });
+
     return (
       <motion.div
-        {...useDoubleTap(() => onDoubleTap(player))}
-        {...useLongPress(() => onLongPress(player), 500)}
+        {...gestureHandlers}
         className={cn(
           "w-full max-w-[98%] md:max-h-[60vh] h-full",
           "relative cursor-pointer rounded-2xl",
@@ -537,6 +568,8 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           getBackground(),
           // Scale up active card and increase z-index to avoid border overlap
           isActive && "scale-105 z-10",
+          // Add gesture feedback
+          isGestureActive && isActive && "scale-110 shadow-2xl",
           // Border: use dynamic border color logic
           isActive ? "border-4" : "border-2",
           getBorderColor(),
@@ -544,7 +577,9 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           isActive ? (player === "black" ? "ring-1 ring-gray-300/30" : "") : "",
           // Add additional outline for white timer when not active to improve border visibility
           !isActive && player === "white" ? "ring-1 ring-gray-400/50" : "",
-          "shadow-lg backdrop-blur-sm",
+          // Enhanced shadow during gesture
+          isGestureActive && isActive ? "shadow-2xl" : "shadow-lg",
+          "backdrop-blur-sm",
           "sm:max-w-[90%] md:max-w-[90%] max-h-[45vh]"
         )}
       >
@@ -700,6 +735,23 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             />
           </div>
         </div>
+
+        {/* Gesture Notification */}
+        <AnimatePresence>
+          {gestureNotification && (
+            <motion.div
+              className="fixed top-20 left-1/2 -translate-x-1/2 z-50"
+              initial={{ opacity: 0, y: -20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="px-4 py-2 rounded-lg bg-neutral-900/90 border border-neutral-700 text-white font-medium shadow-lg backdrop-blur-md">
+                {gestureNotification}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Keyboard Shortcuts */}
         <div className="hidden md:block absolute bottom-6 left-1/2 -translate-x-1/2">

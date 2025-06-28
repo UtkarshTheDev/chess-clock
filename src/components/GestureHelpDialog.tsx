@@ -7,10 +7,10 @@ interface GestureHelpDialogProps {
 }
 
 const gestures = [
-  { action: "Switch Turn", gesture: "Tap the timer" },
-  { action: "Check", gesture: "Double tap" },
-  { action: "Checkmate", gesture: "Long press" },
-  { action: "Play/Pause", gesture: "Tap play/pause button" },
+  { action: "Normal Move", gesture: "Single tap the timer", icon: "👆" },
+  { action: "Check Move", gesture: "Double tap the timer", icon: "👆👆" },
+  { action: "Checkmate", gesture: "Long press the timer", icon: "👆⏱️" },
+  { action: "Play/Pause", gesture: "Use control buttons", icon: "⏯️" },
 ] as const;
 
 export const GestureHelpDialog: React.FC<GestureHelpDialogProps> = ({
@@ -45,13 +45,16 @@ export const GestureHelpDialog: React.FC<GestureHelpDialogProps> = ({
             </div>
 
             <div className="space-y-4">
-              {gestures.map(({ action, gesture }) => (
+              {gestures.map(({ action, gesture, icon }) => (
                 <div
                   key={action}
                   className="flex justify-between items-center p-3 rounded-lg bg-neutral-800/50"
                 >
-                  <span className="text-neutral-300">{action}</span>
-                  <span className="text-white font-medium">{gesture}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{icon}</span>
+                    <span className="text-neutral-300">{action}</span>
+                  </div>
+                  <span className="text-white font-medium text-sm">{gesture}</span>
                 </div>
               ))}
             </div>
