@@ -1,11 +1,13 @@
+
 import { useCallback, useRef, useEffect } from "react";
 
 interface GestureHandlers {
-  onSingleTap?: () => void;
-  onLongPress?: () => void;
-  onGestureStart?: () => void;
-  onGestureEnd?: () => void;
-  onCancel?: () => void;
+  onSingleTap?: (e: Event) => void;
+  onTwoFingerTap?: (e: Event) => void;
+  onLongPress?: (e: Event) => void;
+  onGestureStart?: (e: Event) => void;
+  onGestureEnd?: (e: Event) => void;
+  onCancel?: (e: Event) => void;
 }
 
 interface GestureOptions {
@@ -33,47 +35,67 @@ export default function useGestures(
     }
   }, []);
 
-  const handleStart = useCallback(() => {
+  const handleStart = useCallback((e: any) => {
     isLongPress.current = false;
 
+    if (e.touches && e.touches.length > 1) {
+        // This is a multi-touch event, so we can skip the long press logic
+        clearTimeouts();
+        return;
+    }
+
     if (handlersRef.current.onGestureStart) {
-      handlersRef.current.onGestureStart();
+      handlersRef.current.onGestureStart(e);
     }
 
     if (handlersRef.current.onLongPress) {
       longPressTimeout.current = setTimeout(() => {
         isLongPress.current = true;
         if (handlersRef.current.onLongPress) {
-            handlersRef.current.onLongPress();
+            handlersRef.current.onLongPress(e);
         }
       }, longPressDelay);
     }
-  }, [longPressDelay]);
+  }, [longPressDelay, clearTimeouts]);
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = useCallback((e: any) => {
     if (handlersRef.current.onGestureEnd) {
-      handlersRef.current.onGestureEnd();
+      handlersRef.current.onGestureEnd(e);
     }
 
-    clearTimeout(longPressTimeout.current);
+    clearTimeouts();
 
     if (isLongPress.current) {
       return;
     }
 
-    if (handlersRef.current.onSingleTap) {
-        handlersRef.current.onSingleTap();
+    if (e.touches && e.touches.length > 0) {
+        // This is a multi-touch gesture that is ending, but not a tap
+        return;
     }
-  }, []);
 
-  const handleCancel = useCallback(() => {
+    // Check for two-finger tap on touch end
+    if (e.changedTouches && e.changedTouches.length === 2) {
+        if (handlersRef.current.onTwoFingerTap) {
+            handlersRef.current.onTwoFingerTap(e);
+            return;
+        }
+    }
+    
+    // Fallback for single tap
+    if (handlersRef.current.onSingleTap) {
+        handlersRef.current.onSingleTap(e);
+    }
+  }, [clearTimeouts]);
+
+  const handleCancel = useCallback((e: any) => {
     clearTimeouts();
     isLongPress.current = false;
     if (handlersRef.current.onGestureEnd) {
-      handlersRef.current.onGestureEnd();
+      handlersRef.current.onGestureEnd(e);
     }
     if (handlersRef.current.onCancel) {
-        handlersRef.current.onCancel();
+        handlersRef.current.onCancel(e);
     }
   }, [clearTimeouts]);
 
@@ -83,11 +105,24 @@ export default function useGestures(
     };
   }, [clearTimeouts]);
 
+  const handleTouchStart = (e: TouchEvent) => {
+    if (e.touches.length === 2) {
+        // Immediately handle two-finger tap on start
+        if (handlersRef.current.onTwoFingerTap) {
+            handlersRef.current.onTwoFingerTap(e);
+        }
+        clearTimeouts();
+        return;
+    }
+    handleStart(e);
+  }
+
+
   return {
     onMouseDown: handleStart,
     onMouseUp: handleEnd,
     onMouseLeave: handleCancel,
-    onTouchStart: handleStart,
+    onTouchStart: handleTouchStart,
     onTouchEnd: handleEnd,
     onTouchCancel: handleCancel,
   };

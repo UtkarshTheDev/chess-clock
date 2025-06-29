@@ -386,6 +386,17 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     [activePlayer, isRunning, handlePlayerMove, showGestureNotification]
   );
 
+  const handleTwoFingerTap = useCallback(
+    (player: "white" | "black") => {
+      if (player === activePlayer && isRunning) {
+        showGestureNotification("Check Move");
+        handleCheck();
+        vibrate([100, 50, 100]);
+      }
+    },
+    [activePlayer, isRunning, handleCheck, showGestureNotification]
+  );
+
   
 
   // Handle long press for checkmate
@@ -538,6 +549,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     
     const gestureHandlers = useGestures({
       onSingleTap: () => handleSingleTap(player),
+      onTwoFingerTap: () => handleTwoFingerTap(player),
       onLongPress: () => handleLongPress(player),
       onGestureStart: () => {
         if (isActive && isRunning) {
