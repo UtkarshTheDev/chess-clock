@@ -375,27 +375,18 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     setTimeout(() => setGestureNotification(null), 1500);
   }, []);
 
-  // Handle single tap for normal move
   const handleSingleTap = useCallback(
     (player: "white" | "black") => {
       if (player === activePlayer && isRunning) {
         showGestureNotification("Normal Move");
         handlePlayerMove();
+        vibrate([50]);
       }
     },
     [activePlayer, isRunning, handlePlayerMove, showGestureNotification]
   );
 
-  // Handle double tap for check
-  const handleDoubleTap = useCallback(
-    (player: "white" | "black") => {
-      if (player === activePlayer && isRunning) {
-        showGestureNotification("Check Move");
-        handleCheck();
-      }
-    },
-    [activePlayer, isRunning, handleCheck, showGestureNotification]
-  );
+  
 
   // Handle long press for checkmate
   const handleLongPress = useCallback(
@@ -547,7 +538,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     
     const gestureHandlers = useGestures({
       onSingleTap: () => handleSingleTap(player),
-      onDoubleTap: () => handleDoubleTap(player),
       onLongPress: () => handleLongPress(player),
       onGestureStart: () => {
         if (isActive && isRunning) {

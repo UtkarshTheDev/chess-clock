@@ -8,7 +8,6 @@ interface GestureHelpDialogProps {
 
 const gestures = [
   { action: "Normal Move", gesture: "Single tap the timer", icon: "👆" },
-  { action: "Check Move", gesture: "Double tap the timer", icon: "👆👆" },
   { action: "Checkmate", gesture: "Long press the timer", icon: "👆⏱️" },
   { action: "Play/Pause", gesture: "Use control buttons", icon: "⏯️" },
 ] as const;
