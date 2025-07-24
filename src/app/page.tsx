@@ -12,10 +12,14 @@ import {
   Hourglass,
   TimerReset,
   PlayIcon,
+  Pause,
+  RotateCcw,
 } from "lucide-react";
-import { useTimerTypeStore, TimerType } from "@/stores/timerTypeStore";
+import { useTimerTypeStore, TimerType, TimerMode } from "@/stores/timerTypeStore";
 import { ChessTimer } from "@/components/ChessTimer";
 import { useStatsStore } from "@/stores/statsStore";
+import { ClockConfig } from "@/types/chess";
+import { TIMER_CONFIGS, createCustomConfig } from "@/lib/timerConfigs";
 
 type GameState = "home" | "playing";
 
@@ -43,50 +47,81 @@ export default function Home() {
 
   const types = [
     {
-      title: "Fischer",
-      type: "fischer" as TimerType,
-      increment: 5,
-      description: "Increment: +5 sec",
-      icon: <Hourglass className="w-5 h-5 text-white" />,
+      title: "Sudden Death",
+      mode: "SUDDEN_DEATH" as TimerMode,
+      description: "Standard countdown",
+      icon: <TimerOff className="w-5 h-5 text-white" />,
+      config: (baseMinutes: number) => createCustomConfig("SUDDEN_DEATH", baseMinutes),
     },
     {
-      title: "Normal",
-      type: "normal" as TimerType,
-      increment: 0,
-      description: "Standard",
-      icon: <TimerOff className="w-5 h-5 text-white" />,
+      title: "Simple Delay",
+      mode: "SIMPLE_DELAY" as TimerMode,
+      description: "US Delay: 5s",
+      icon: <Pause className="w-5 h-5 text-white" />,
+      config: (baseMinutes: number) => createCustomConfig("SIMPLE_DELAY", baseMinutes, { delaySeconds: 5 }),
     },
     {
       title: "Bronstein",
-      type: "bronstein" as TimerType,
-      increment: 3,
-      description: "Delay: +3 sec",
+      mode: "BRONSTEIN_DELAY" as TimerMode,
+      description: "Bronstein: 3s",
+      icon: <RotateCcw className="w-5 h-5 text-white" />,
+      config: (baseMinutes: number) => createCustomConfig("BRONSTEIN_DELAY", baseMinutes, { delaySeconds: 3 }),
+    },
+    {
+      title: "Fischer",
+      mode: "FISCHER_INCREMENT" as TimerMode,
+      description: "Increment: +5s",
+      icon: <Hourglass className="w-5 h-5 text-white" />,
+      config: (baseMinutes: number) => createCustomConfig("FISCHER_INCREMENT", baseMinutes, { incrementSeconds: 5 }),
+    },
+    {
+      title: "Multi-Stage",
+      mode: "MULTI_STAGE" as TimerMode,
+      description: "Tournament style",
       icon: <TimerReset className="w-5 h-5 text-white" />,
+      config: (baseMinutes: number) => {
+        if (baseMinutes >= 60) {
+          // Classical tournament format
+          return createCustomConfig("MULTI_STAGE", 90, {
+            incrementSeconds: 30,
+            stages: [{ afterMoves: 40, addMinutes: 30 }]
+          });
+        } else {
+          // Rapid tournament format
+          return createCustomConfig("MULTI_STAGE", baseMinutes, {
+            incrementSeconds: 10,
+            stages: [{ afterMoves: 30, addMinutes: baseMinutes / 2 }]
+          });
+        }
+      },
     },
   ];
 
-  const { initializeTime } = useTimerStore();
-  const { setTimerType, setIncrement } = useTimerTypeStore();
+  const { initializeTimer, setTimeoutCallback } = useTimerStore();
+  const { setConfig } = useTimerTypeStore();
   const [time, setTime] = useState(15);
-  const [selectedType, setSelectedType] = useState<TimerType>("normal");
+  const [selectedMode, setSelectedMode] = useState<TimerMode>("SUDDEN_DEATH");
   const [gameState, setGameState] = useState<GameState>("home");
 
   const setTimer = () => {
-    // Initialize the time in timerStore
-    initializeTime(time);
-    
     // Get the selected timer type configuration
-    const selectedTypeObj = types.find((t) => t.type === selectedType);
+    const selectedTypeObj = types.find((t) => t.mode === selectedMode);
     if (selectedTypeObj) {
-      // Set the type and increment in timerTypeStore
-      setTimerType(selectedTypeObj.type);
-      setIncrement(selectedTypeObj.increment);
-      
-      // Also set the same values in timerStore for consistency
-      useTimerStore.getState().setTimerType(selectedTypeObj.type);
-      useTimerStore.getState().setIncrement(selectedTypeObj.increment);
+      // Create the configuration
+      const config = selectedTypeObj.config(time);
+
+      // Set the configuration in stores
+      setConfig(config);
+      initializeTimer(config);
+
+      // Set timeout callback for game end handling
+      setTimeoutCallback((player: "white" | "black") => {
+        // Handle timeout - this will be called when a player runs out of time
+        console.log(`${player} ran out of time!`);
+        // You can add game end logic here
+      });
     }
-    
+
     // Start the stats tracking
     useStatsStore.getState().startGame();
   };
@@ -103,7 +138,7 @@ export default function Home() {
   const resetGame = () => {
     setGameState("home");
     setTime(15);
-    setSelectedType("normal");
+    setSelectedMode("SUDDEN_DEATH");
     useTimerStore.getState().resetTimer();
   };
 
@@ -165,29 +200,29 @@ export default function Home() {
           {/* Type Section */}
           <div className="text-white py-4 font-ubuntu flex flex-col items-center justify-center w-full space-y-3 border-t border-neutral-500">
             <h2 className="text-lg font-bold font-ubuntu">Type</h2>
-            <div className="grid grid-cols-3 gap-4 w-full justify-center items-center">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full justify-center items-center">
               {types.map((typeItem, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedType(typeItem.type)}
+                  onClick={() => setSelectedMode(typeItem.mode)}
                   className={`border ${
-                    selectedType === typeItem.type
+                    selectedMode === typeItem.mode
                       ? "border-white bg-green-500"
                       : "border-neutral-800 bg-primary"
-                  } hover:border-neutral-300 w-full flex flex-col items-center justify-center p-4 hover:bg-green-600 rounded-lg transition-all duration-300 group cursor-pointer`}
+                  } hover:border-neutral-300 w-full flex flex-col items-center justify-center p-3 hover:bg-green-600 rounded-lg transition-all duration-300 group cursor-pointer`}
                 >
-                  <div className="flex items-center justify-center space-x-2">
+                  <div className="flex items-center justify-center space-x-1 mb-1">
                     {typeItem.icon}
-                    <span className="text-lg text-white font-bold group-hover:text-white transition-colors duration-300">
+                    <span className="text-sm text-white font-bold group-hover:text-white transition-colors duration-300">
                       {typeItem.title}
                     </span>
                   </div>
                   <span
                     className={`text-xs ${
-                      selectedType === typeItem.type
+                      selectedMode === typeItem.mode
                         ? "text-white"
                         : "text-neutral-400"
-                    } group-hover:text-white transition-colors duration-300`}
+                    } group-hover:text-white transition-colors duration-300 text-center`}
                   >
                     {typeItem.description}
                   </span>

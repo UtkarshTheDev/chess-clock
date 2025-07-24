@@ -1,3 +1,58 @@
+// Timer Configuration Types
+export interface ClockConfig {
+  mode: 'SUDDEN_DEATH' | 'SIMPLE_DELAY' | 'BRONSTEIN_DELAY' | 'FISCHER_INCREMENT' | 'MULTI_STAGE';
+  baseMillis: number;
+  delayMillis?: number;
+  incMillis?: number;
+  stages?: {
+    afterMoves: number;
+    addMillis: number;
+    incMillis?: number;
+  }[];
+  incBefore?: boolean;
+}
+
+// Timer State Types
+export interface TimerState {
+  whiteTimeRemaining: number;
+  blackTimeRemaining: number;
+  isRunning: boolean;
+  activePlayer: "white" | "black" | null;
+  config: ClockConfig;
+
+  // Mode-specific state
+  whiteDelayRemaining?: number;
+  blackDelayRemaining?: number;
+  whitePendingIncrement?: number;
+  blackPendingIncrement?: number;
+  whiteMoveCount: number;
+  blackMoveCount: number;
+  whiteStageIndex: number;
+  blackStageIndex: number;
+
+  // Move tracking
+  lastMoveStartTime: number | null;
+  moveStartTime: number | null;
+  initialTime: number;
+}
+
+// Timer Mode Handler Interface
+export interface TimerModeHandler {
+  onMoveStart(player: "white" | "black", state: TimerState): Partial<TimerState>;
+  onMoveComplete(player: "white" | "black", moveTime: number, state: TimerState): Partial<TimerState>;
+  onTick(player: "white" | "black", state: TimerState): Partial<TimerState>;
+  getDisplayInfo(player: "white" | "black", state: TimerState): TimerDisplayInfo;
+}
+
+export interface TimerDisplayInfo {
+  mainTime: number;
+  delayTime?: number;
+  pendingIncrement?: number;
+  stageInfo?: string;
+  isInDelay?: boolean;
+}
+
+// Existing types for backward compatibility
 export interface GamePhaseStats {
   totalMoves: number;
   totalTime: number;

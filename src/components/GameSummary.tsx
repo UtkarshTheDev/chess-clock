@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
-import { useTimerStore } from "@/stores/timerStore";
+import { useTimerTypeStore } from "@/stores/timerTypeStore";
 import { Crown, Play, Home, Handshake } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "./ui/CustomTooltip";
@@ -15,12 +15,13 @@ interface GameSummaryProps {
 const WinnerBanner = ({
   winner,
   reason,
-  timerType,
 }: {
   winner: string;
   reason: string;
-  timerType: "normal" | "fischer" | "bronstein";
-}) => (
+}) => {
+  const { getDetailedDisplayName } = useTimerTypeStore();
+
+  return (
   <motion.div
     initial={{ opacity: 0, y: -20 }}
     animate={{ opacity: 1, y: 0 }}
@@ -48,10 +49,11 @@ const WinnerBanner = ({
     </motion.div>
     <p className="text-neutral-400">{reason}</p>
     <div className="mt-2 text-sm text-neutral-500">
-      Timer Type: {timerType.charAt(0).toUpperCase() + timerType.slice(1)}
+      Timer Type: {getDetailedDisplayName()}
     </div>
   </motion.div>
-);
+  );
+};
 
 const StatCard = ({
   label,
@@ -168,7 +170,7 @@ const MoveItem = ({
         <div className="flex items-center gap-2">
           <span className="text-sm text-white/60">Move {move.moveNumber}</span>
           <span className={cn("text-sm font-medium", getPhaseColor())}>
-            {move.phase.charAt(0).toUpperCase() + move.phase.slice(1)}
+            {move.phase ? move.phase.charAt(0).toUpperCase() + move.phase.slice(1) : 'Unknown'}
           </span>
         </div>
         <span className="text-sm font-medium text-white">
@@ -312,12 +314,30 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
 
 const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
   const { gameSummary } = useStatsStore();
-  const { type: timerType } = useTimerStore();
+  const { getDetailedDisplayName } = useTimerTypeStore();
   const [activeTab, setActiveTab] = useState<"overview" | "analysis">("overview");
 
-  if (!gameSummary) return null;
+  if (!gameSummary) {
+    console.error('GameSummary: No game summary data available');
+    return null;
+  }
 
   const { winner, endReason, whiteStats, blackStats } = gameSummary;
+
+  // Safety checks for required data
+  if (!winner || !endReason || !whiteStats || !blackStats) {
+    console.error('GameSummary: Missing required game data', { winner, endReason, whiteStats: !!whiteStats, blackStats: !!blackStats });
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="bg-neutral-900 rounded-2xl p-6 text-white text-center">
+          <p>Error loading game summary</p>
+          <button onClick={onExit} className="mt-4 px-4 py-2 bg-blue-600 rounded-lg">
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -333,7 +353,6 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
         <WinnerBanner
           winner={winner}
           reason={endReason}
-          timerType={timerType}
         />
 
         <div className="flex p-2 gap-2 border-b border-white/5">

@@ -35,6 +35,7 @@ export const ActionButton = ({
     <motion.button
       onClick={onClick}
       disabled={disabled}
+      data-action-button={variant}
       className={cn(
         "px-4 py-2 rounded-lg",
         "border-2 transition-all duration-200",

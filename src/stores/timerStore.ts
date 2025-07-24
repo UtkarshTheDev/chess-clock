@@ -1,139 +1,204 @@
 import { create } from "zustand";
+import { ClockConfig, TimerState as EngineTimerState, TimerDisplayInfo } from "@/types/chess";
+import { ChessTimerEngine } from "@/lib/timerEngine";
+import { TIMER_CONFIGS } from "@/lib/timerConfigs";
 
-interface TimerState {
+interface TimerStoreState {
+  // Engine state
+  engine: ChessTimerEngine | null;
+  timerState: EngineTimerState | null;
+
+  // Display state
+  whiteDisplayInfo: TimerDisplayInfo | null;
+  blackDisplayInfo: TimerDisplayInfo | null;
+
+  // Backward compatibility
   whiteTimeRemaining: number;
   blackTimeRemaining: number;
   isRunning: boolean;
   activePlayer: "white" | "black" | null;
-  type: "normal" | "fischer" | "bronstein";
-  increment: number;
-  bronsteinDelay: number;
-  lastMoveStartTime: number | null;
   initialTime: number;
+  lastMoveStartTime: number | null;
 
   // Actions
-  initializeTime: (initialTimeInMinutes: number) => void;
+  initializeTimer: (config: ClockConfig) => void;
+  initializeTime: (initialTimeInMinutes: number) => void; // Backward compatibility
   switchActivePlayer: () => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
-  tick: () => void;
-  formatTime: (seconds: number) => string;
   resetTimer: () => void;
-  addIncrement: (player: "white" | "black", amount: number) => void;
+
+  // New actions
+  startTimer: (startingPlayer?: "white" | "black") => void;
+  updateDisplayInfo: () => void;
+  setTimeoutCallback: (callback: (player: "white" | "black") => void) => void;
+
+  // Backward compatibility actions
   decrementWhiteTime: () => void;
   decrementBlackTime: () => void;
+  formatTime: (seconds: number) => string;
+  addIncrement: (player: "white" | "black", amount: number) => void;
   setTimerType: (type: "normal" | "fischer" | "bronstein") => void;
   setIncrement: (seconds: number) => void;
   setBronsteinDelay: (seconds: number) => void;
+  tick: () => void;
 }
 
-export const useTimerStore = create<TimerState>((set, get) => {
-  const addIncrement = (player: "white" | "black", amount: number) =>
-    set((state) => ({
-      whiteTimeRemaining:
-        player === "white"
-          ? state.whiteTimeRemaining + amount
-          : state.whiteTimeRemaining,
-      blackTimeRemaining:
-        player === "black"
-          ? state.blackTimeRemaining + amount
-          : state.blackTimeRemaining,
-    }));
+export const useTimerStore = create<TimerStoreState>((set, get) => {
+  let timeoutCallback: ((player: "white" | "black") => void) | null = null;
+
+  const updateFromEngine = (engineState: EngineTimerState) => {
+    const state = get();
+
+    // Update display info
+    const whiteDisplayInfo = state.engine?.getDisplayInfo("white") || null;
+    const blackDisplayInfo = state.engine?.getDisplayInfo("black") || null;
+
+    set({
+      timerState: engineState,
+      whiteDisplayInfo,
+      blackDisplayInfo,
+      // Backward compatibility
+      whiteTimeRemaining: engineState.whiteTimeRemaining,
+      blackTimeRemaining: engineState.blackTimeRemaining,
+      isRunning: engineState.isRunning,
+      activePlayer: engineState.activePlayer,
+      lastMoveStartTime: engineState.moveStartTime,
+    });
+  };
+
+  const handleTimeout = (player: "white" | "black") => {
+    if (timeoutCallback) {
+      timeoutCallback(player);
+    }
+  };
 
   return {
     // Initial state
+    engine: null,
+    timerState: null,
+    whiteDisplayInfo: null,
+    blackDisplayInfo: null,
     whiteTimeRemaining: 0,
     blackTimeRemaining: 0,
     isRunning: false,
     activePlayer: null,
-    type: "normal" as const,
-    increment: 0,
-    bronsteinDelay: 0,
-    lastMoveStartTime: null,
     initialTime: 15 * 60, // 15 minutes default
+    lastMoveStartTime: null,
+
+    initializeTimer: (config: ClockConfig) => {
+      const state = get();
+
+      try {
+        // Cleanup existing engine
+        if (state.engine) {
+          state.engine.destroy();
+        }
+
+        // Create new engine
+        const engine = new ChessTimerEngine(config, updateFromEngine, handleTimeout);
+
+        set({
+          engine,
+          initialTime: config.baseMillis / 1000,
+        });
+
+        // Initial state update
+        updateFromEngine(engine.getState());
+      } catch (error) {
+        console.error('Failed to initialize timer engine:', error);
+      }
+    },
 
     initializeTime: (initialTimeInMinutes: number) => {
-      const timeInSeconds = initialTimeInMinutes * 60;
-      set({
-        whiteTimeRemaining: timeInSeconds,
-        blackTimeRemaining: timeInSeconds,
-        isRunning: false,
-        activePlayer: "white",
-        initialTime: timeInSeconds,
-        lastMoveStartTime: null,
-      });
+      // Backward compatibility - create a sudden death config
+      const config: ClockConfig = {
+        mode: 'SUDDEN_DEATH',
+        baseMillis: initialTimeInMinutes * 60 * 1000,
+      };
+
+      get().initializeTimer(config);
     },
 
     switchActivePlayer: () => {
       const state = get();
-      const { activePlayer, type, increment, lastMoveStartTime } = state;
-
-      // Handle time compensation based on timer type
-      if (activePlayer && lastMoveStartTime) {
-        const moveTime = Date.now() - lastMoveStartTime;
-        const compensationTime = Math.min(moveTime, increment * 1000);
-
-        if (type === "bronstein") {
-          // Add compensation time for Bronstein delay
-          if (activePlayer === "white") {
-            set((state) => ({
-              whiteTimeRemaining:
-                state.whiteTimeRemaining + compensationTime / 1000,
-            }));
-          } else {
-            set((state) => ({
-              blackTimeRemaining:
-                state.blackTimeRemaining + compensationTime / 1000,
-            }));
-          }
-        } else if (type === "fischer") {
-          // Add increment for Fischer time control
-          addIncrement(activePlayer, increment);
-        }
+      if (state.engine) {
+        state.engine.switchPlayer();
       }
+    },
 
-      // Switch active player and record start time
-      set({
-        activePlayer: activePlayer === "white" ? "black" : "white",
-        lastMoveStartTime: Date.now(),
-      });
+    startTimer: (startingPlayer: "white" | "black" = "white") => {
+      const state = get();
+      if (state.engine) {
+        state.engine.start(startingPlayer);
+      }
+    },
+
+    updateDisplayInfo: () => {
+      const state = get();
+      if (state.engine) {
+        const whiteDisplayInfo = state.engine.getDisplayInfo("white");
+        const blackDisplayInfo = state.engine.getDisplayInfo("black");
+
+        set({
+          whiteDisplayInfo,
+          blackDisplayInfo,
+        });
+      }
     },
 
     pauseTimer: () => {
-      set({ isRunning: false });
-    },
-
-    resumeTimer: () => {
-      set((state) => ({
-        isRunning: true,
-        lastMoveStartTime: state.activePlayer ? Date.now() : null,
-      }));
-    },
-
-    tick: () => {
-      const { activePlayer, whiteTimeRemaining, blackTimeRemaining } = get();
-
-      if (activePlayer === "white" && whiteTimeRemaining > 0) {
-        set({ whiteTimeRemaining: whiteTimeRemaining - 1 });
-      } else if (activePlayer === "black" && blackTimeRemaining > 0) {
-        set({ blackTimeRemaining: blackTimeRemaining - 1 });
+      const state = get();
+      if (state.engine) {
+        state.engine.pause();
       }
     },
 
-    decrementWhiteTime: () =>
-      set((state) => ({
-        whiteTimeRemaining: Math.max(0, state.whiteTimeRemaining - 1),
-      })),
+    resumeTimer: () => {
+      const state = get();
 
-    decrementBlackTime: () =>
-      set((state) => ({
-        blackTimeRemaining: Math.max(0, state.blackTimeRemaining - 1),
-      })),
+      if (state.engine) {
+        try {
+          if (!state.isRunning && !state.activePlayer) {
+            // First start - begin with white
+            state.engine.start("white");
+          } else {
+            // Resume existing game
+            state.engine.resume();
+          }
+        } catch (error) {
+          console.error('Error in resumeTimer:', error);
+        }
+      }
+    },
+
+    resetTimer: () => {
+      const state = get();
+      if (state.engine) {
+        state.engine.reset();
+      }
+    },
+
+    // Backward compatibility methods
+    tick: () => {
+      // This is now handled by the engine internally
+    },
+
+    decrementWhiteTime: () => {
+      // This is now handled by the engine internally
+    },
+
+    decrementBlackTime: () => {
+      // This is now handled by the engine internally
+    },
 
     formatTime: (seconds: number) => {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const remainingSeconds = seconds % 60;
+      // Always round down to whole seconds for display
+      const totalSeconds = Math.floor(seconds);
+
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const remainingSeconds = totalSeconds % 60;
 
       const pad = (num: number) => num.toString().padStart(2, "0");
 
@@ -143,21 +208,28 @@ export const useTimerStore = create<TimerState>((set, get) => {
       return `${pad(minutes)}:${pad(remainingSeconds)}`;
     },
 
-    resetTimer: () =>
-      set({
-        whiteTimeRemaining: 0,
-        blackTimeRemaining: 0,
-        isRunning: false,
-        activePlayer: null,
-        lastMoveStartTime: null,
-      }),
+    addIncrement: (player: "white" | "black", amount: number) => {
+      const state = get();
+      if (state.engine) {
+        state.engine.addTime(player, amount);
+      }
+    },
 
-    setTimerType: (type: "normal" | "fischer" | "bronstein") => set({ type }),
+    // Legacy compatibility methods (no-op)
+    setTimerType: (_type: "normal" | "fischer" | "bronstein") => {
+      // Legacy method - configuration is now handled via initializeTimer
+    },
 
-    setIncrement: (seconds: number) => set({ increment: seconds }),
+    setIncrement: (_seconds: number) => {
+      // Legacy method - configuration is now handled via initializeTimer
+    },
 
-    setBronsteinDelay: (seconds: number) => set({ bronsteinDelay: seconds }),
+    setBronsteinDelay: (_seconds: number) => {
+      // Legacy method - configuration is now handled via initializeTimer
+    },
 
-    addIncrement,
+    setTimeoutCallback: (callback: (player: "white" | "black") => void) => {
+      timeoutCallback = callback;
+    },
   };
 });

@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useCallback } from "react";
 import { useTimerStore } from "../stores/timerStore";
 import { useStatsStore } from "@/stores/statsStore";
+import { useTimerTypeStore } from "@/stores/timerTypeStore";
 import {
   Check,
   Trophy,
@@ -56,11 +57,26 @@ const ControlButton: React.FC<ControlButtonProps> = ({
 };
 
 const formatTime = (seconds: number): string => {
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-    .toString()
-    .padStart(2, "0")}`;
+  // Always round down to whole seconds for display
+  const totalSeconds = Math.floor(seconds);
+
+  // Calculate hours, minutes, and seconds
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  // Format based on duration
+  if (hours > 0) {
+    // Format as H:MM:SS for times over an hour
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  } else {
+    // Format as MM:SS for times under an hour
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
+  }
 };
 
 interface ChessTimerProps {
@@ -156,7 +172,12 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     pauseTimer,
     resumeTimer,
     initialTime,
+    whiteDisplayInfo,
+    blackDisplayInfo,
+    startTimer,
   } = useTimerStore();
+
+  const { getDetailedDisplayName } = useTimerTypeStore();
 
   const [showSummary, setShowSummary] = useState(false);
   const [showGestureHelp, setShowGestureHelp] = useState(false);
@@ -220,46 +241,21 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     if (onReset) {
       onReset();
     }
-    initializeTime(initialTime / 60);
+    // Reset will be handled by the parent component
     setShowSummary(false);
     playGameStart();
     useStatsStore.getState().resetStats();
-  }, [onReset, initializeTime, playGameStart, initialTime]);
+  }, [onReset, playGameStart]);
 
-  // Timer Effect
+  // Set up timeout callback
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    const store = useTimerStore.getState();
 
-    if (isRunning && activePlayer) {
-      interval = setInterval(() => {
-        if (activePlayer === "white") {
-          if (whiteTimeRemaining <= 0) {
-            handleGameEnd("timeout");
-            return;
-          }
-          useTimerStore.getState().decrementWhiteTime();
-        } else {
-          if (blackTimeRemaining <= 0) {
-            handleGameEnd("timeout");
-            return;
-          }
-          useTimerStore.getState().decrementBlackTime();
-        }
-      }, 1000);
-    }
-
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
-  }, [
-    isRunning,
-    activePlayer,
-    whiteTimeRemaining,
-    blackTimeRemaining,
-    handleGameEnd,
-  ]);
+    // Set timeout callback
+    store.setTimeoutCallback((_player: "white" | "black") => {
+      handleGameEnd("timeout");
+    });
+  }, [handleGameEnd]);
 
   const handlePlayerMove = useCallback(() => {
     if (activePlayer && isRunning) {
@@ -296,11 +292,11 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
       const moveTime = lastMoveTime
         ? (Date.now() - lastMoveTime) / 1000
         : 0;
-        
+
       playCheck();
       vibrate([100]);
       switchActivePlayer();
-      
+
       // Record the check move with actual time
       useStatsStore
         .getState()
@@ -463,6 +459,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     showPhaseIndicator: boolean;
     isRunning: boolean;
   }) => {
+    const displayInfo = player === "white" ? whiteDisplayInfo : blackDisplayInfo;
     const [isGestureActive, setIsGestureActive] = useState(false);
     // Get time-based color for background
     const getTimeBasedBackground = () => {
@@ -548,7 +545,17 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     const needsContrastBackground = player === "white";
     
     const gestureHandlers = useGestures({
-      onSingleTap: () => handleSingleTap(player),
+      onSingleTap: (event?: Event) => {
+        // Check if the click came from an action button
+        if (event && event.target) {
+          const target = event.target as HTMLElement;
+          const isActionButton = target.closest('[data-action-button]') || target.closest('.action-button-container');
+          if (isActionButton) {
+            return;
+          }
+        }
+        handleSingleTap(player);
+      },
       onTwoFingerTap: () => handleTwoFingerTap(player),
       onLongPress: () => handleLongPress(player),
       onGestureStart: () => {
@@ -585,37 +592,66 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           "sm:max-w-[90%] md:max-w-[90%] max-h-[45vh]"
         )}
       >
-        <div className="flex items-center justify-center h-full">
+        <div className="flex flex-col items-center justify-center h-full">
+          {/* Timer Mode Info */}
+          {displayInfo && (displayInfo.delayTime !== undefined || displayInfo.pendingIncrement !== undefined || displayInfo.stageInfo) && (
+            <div className="mb-2 text-center">
+              {displayInfo.isInDelay && displayInfo.delayTime !== undefined && (
+                <div className="text-sm font-medium text-yellow-300 bg-yellow-900/30 px-2 py-1 rounded">
+                  Delay: {Math.ceil(displayInfo.delayTime)}s
+                </div>
+              )}
+              {displayInfo.pendingIncrement !== undefined && displayInfo.pendingIncrement > 0 && (
+                <div className="text-sm font-medium text-green-300 bg-green-900/30 px-2 py-1 rounded mt-1">
+                  +{displayInfo.pendingIncrement}s after move
+                </div>
+              )}
+              {displayInfo.stageInfo && (
+                <div className="text-xs font-medium text-blue-300 bg-blue-900/30 px-2 py-1 rounded mt-1">
+                  {displayInfo.stageInfo}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Main Time Display */}
           <span className="font-sourGummy text-8xl lg:text-9xl font-bold">
             {formatTime(time)}
           </span>
         </div>
 
+        {/* Action Buttons */}
         <motion.div
           className={cn(
-            "absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4",
+            "absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-20 action-button-container",
             // Add semi-transparent background for buttons on white background for better contrast
             needsContrastBackground ? "p-2 rounded-lg bg-gray-800/30 backdrop-blur-md" : ""
           )}
           initial={false}
+          data-action-button-container="true"
+          onClick={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
         >
           <ActionButton
             variant="check"
             onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
+              e?.preventDefault();
               e?.stopPropagation();
-              if (isActive) {
+              if (isActive && isRunning) {
                 handleCheck();
               }
             }}
-            disabled={!isActive}
+            disabled={!isActive || !isRunning}
             icon={<Check className="w-5 h-5" />}
             label="Check"
           />
           <ActionButton
             variant="checkmate"
             onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
+              e?.preventDefault();
               e?.stopPropagation();
-              if (isActive) {
+              if (isActive && isRunning) {
                 setConfirmationState({
                   isOpen: true,
                   type: "checkmate",
@@ -623,15 +659,16 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
                 });
               }
             }}
-            disabled={!isActive}
+            disabled={!isActive || !isRunning}
             icon={<Trophy className="w-5 h-5" />}
             label="Checkmate"
           />
           <ActionButton
             variant="draw"
             onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
+              e?.preventDefault();
               e?.stopPropagation();
-              if (isActive) {
+              if (isActive && isRunning) {
                 setConfirmationState({
                   isOpen: true,
                   type: "draw",
@@ -639,7 +676,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
                 });
               }
             }}
-            disabled={!isActive}
+            disabled={!isActive || !isRunning}
             icon={<Handshake className="w-5 h-5" />}
             label="Draw"
           />
@@ -676,9 +713,10 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             />
           </div>
           
-          {/* Central Phase Indicator */}
-          <div className="flex-grow flex justify-center">
-            <div 
+          {/* Central Phase Indicator and Timer Type */}
+          <div className="flex-grow flex flex-col items-center gap-2">
+            {/* Phase Indicator */}
+            <div
               className={cn(
                 "px-4 py-2 rounded-full text-sm font-medium shadow-md",
                 "flex items-center gap-2",
@@ -687,6 +725,13 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             >
               <span className="text-white text-lg">{phaseInfo.icon}</span>
               <span className="text-white">{phaseInfo.label}</span>
+            </div>
+
+            {/* Timer Type Display */}
+            <div className="px-3 py-1 rounded-full bg-neutral-800/80 backdrop-blur-sm">
+              <span className="text-neutral-300 text-xs font-medium">
+                {getDetailedDisplayName()}
+              </span>
             </div>
           </div>
           
@@ -797,7 +842,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           <GameSummary
             onNewGame={() => {
               if (onReset) onReset();
-              initializeTime(initialTime / 60);
               setShowSummary(false);
               playGameStart();
               useStatsStore.getState().resetStats();
