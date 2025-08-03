@@ -1,0 +1,113 @@
+# Robots.txt for ChessTicks - Professional Chess Timer
+# https://chessticks.vercel.app
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /*?*utm_*
+Disallow: /*?*fbclid*
+Disallow: /*?*gclid*
+
+# Allow important files
+Allow: /manifest.json
+Allow: /sitemap.xml
+Allow: /robots.txt
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.webp
+Allow: /*.svg
+Allow: /*.ico
+Allow: /*.woff
+Allow: /*.woff2
+Allow: /*.ttf
+Allow: /*.eot
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 2
+
+User-agent: YandexBot
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Crawl-delay: 1
+
+# Social media crawlers
+User-agent: facebookexternalhit
+Allow: /
+Allow: /og-image.png
+Allow: /twitter-image.png
+
+User-agent: Twitterbot
+Allow: /
+Allow: /og-image.png
+Allow: /twitter-image.png
+
+User-agent: LinkedInBot
+Allow: /
+Allow: /og-image.png
+
+# Block unwanted bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MegaIndex
+Disallow: /
+
+# Sitemap location
+Sitemap: https://chessticks.vercel.app/sitemap.xml
+
+# Additional information
+# Website: https://chessticks.vercel.app
+# Contact: utkarshweb2023@gmail.com
+# Last updated: 2024-01-01

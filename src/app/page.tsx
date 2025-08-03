@@ -154,17 +154,18 @@ export default function Home() {
             width={72}
             height={72}
             className="w-16"
-            alt="logo"
+            alt="ChessTicks - Professional Chess Timer and Tournament Clock Logo"
+            priority
           />
-          <h2 className="text-lg font-bold text-white tracking-tight font-unbounded">
-            Chess Timer
-          </h2>
+          <h1 className="text-lg font-bold text-white tracking-tight font-unbounded">
+            ChessTicks - Professional Chess Timer
+          </h1>
         </div>
 
         <div className="mt-4 flex justify-center items-center w-full flex-col space-y-6">
           {/* Duration Section */}
           <div className="text-white py-4 font-ubuntu flex flex-col items-center justify-center w-full space-y-3">
-            <h2 className="text-lg font-bold font-ubuntu">Duration</h2>
+            <h2 className="text-lg font-bold font-ubuntu">Chess Game Duration - Time Controls</h2>
             <div className="grid grid-cols-3 gap-4 w-full justify-center items-center">
               {durations.map((duration, index) => (
                 <button
@@ -198,7 +199,7 @@ export default function Home() {
 
           {/* Type Section */}
           <div className="text-white py-4 font-ubuntu flex flex-col items-center justify-center w-full space-y-3 border-t border-neutral-500">
-            <h2 className="text-lg font-bold font-ubuntu">Type</h2>
+            <h2 className="text-lg font-bold font-ubuntu">Tournament Timer Modes - Professional Chess Formats</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full justify-center items-center">
               {types.map((typeItem, index) => (
                 <button
@@ -245,8 +246,42 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col items-center min-h-screen px-4 py-6 sm:px-6 lg:px-8 bg-[#121212]">
-      {renderContent()}
-    </main>
+    <>
+      {/* Hidden SEO Content */}
+      <div className="sr-only">
+        <h1>ChessTicks - Professional Chess Timer and Tournament Clock</h1>
+        <p>
+          Professional chess timer application supporting all five major tournament time control formats:
+          Sudden Death, Fischer Increment, Simple Delay, Bronstein Delay, and Multi-Stage timers.
+          Perfect for chess players, tournaments, blitz games, rapid games, and classical chess matches.
+          Free online chess clock with professional features including gesture controls, audio feedback,
+          and comprehensive game statistics. Compatible with FIDE tournament regulations and popular
+          online chess platforms like Chess.com and Lichess.
+        </p>
+        <h2>Supported Chess Timer Modes</h2>
+        <ul>
+          <li>Sudden Death Timer - Classic countdown format for blitz and rapid games</li>
+          <li>Fischer Increment Timer - Adds time after each move, popular on online platforms</li>
+          <li>Simple Delay Timer - US Chess Federation standard with delay before countdown</li>
+          <li>Bronstein Delay Timer - European standard with time compensation</li>
+          <li>Multi-Stage Timer - World Championship and tournament formats with multiple phases</li>
+        </ul>
+        <h2>Chess Time Controls Supported</h2>
+        <ul>
+          <li>Bullet Chess (1-3 minutes) - Ultra-fast games with increment</li>
+          <li>Blitz Chess (3-5 minutes) - Quick games for casual and competitive play</li>
+          <li>Rapid Chess (10-25 minutes) - Standard tournament format</li>
+          <li>Classical Chess (60+ minutes) - Long-form tournament and match play</li>
+        </ul>
+      </div>
+
+      <main
+        className="flex flex-col items-center min-h-screen px-4 py-6 sm:px-6 lg:px-8 bg-[#121212]"
+        role="main"
+        aria-label="Chess Timer Application"
+      >
+        {renderContent()}
+      </main>
+    </>
   );
 }
