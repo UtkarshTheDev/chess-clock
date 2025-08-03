@@ -170,7 +170,7 @@ export const useTimerTypeStore = create<TimerTypeState>((set, get) => ({
         return `Fischer +${(config.incMillis || 0) / 1000}s`;
       case 'MULTI_STAGE':
         const hasIncrement = config.incMillis && config.incMillis > 0;
-        return hasIncrement ? `Multi-Stage +${config.incMillis / 1000}s` : 'Multi-Stage';
+        return hasIncrement ? `Multi-Stage +${(config.incMillis || 0) / 1000}s` : 'Multi-Stage';
       default:
         return 'Unknown';
     }
