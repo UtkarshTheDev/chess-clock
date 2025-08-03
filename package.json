@@ -34,7 +34,7 @@
     "analyze": "cross-env ANALYZE=true next build",
     "export": "next export",
     "preview": "next build && next start",
-    "postbuild": "next-sitemap"
+    "postbuild": "npx next-sitemap"
   },
   "dependencies": {
     "@radix-ui/react-progress": "^1.1.0",

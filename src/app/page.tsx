@@ -157,7 +157,7 @@ export default function Home() {
             alt="ChessTicks - Professional Chess Timer and Tournament Clock Logo"
             priority
           />
-          <h1 className="text-lg font-bold text-white tracking-tight font-unbounded">
+          <h1 className="text-lg font-bold text-white tracking-normal font-unbounded">
             Chess Ticks
           </h1>
         </div>

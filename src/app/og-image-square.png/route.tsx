@@ -1,20 +1,19 @@
 import { ImageResponse } from 'next/og'
-import { NextRequest } from 'next/server'
 
 export const runtime = 'edge'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Fetch the actual ChessTicks logo
-    let logoData = null
+    let logoData: string | null = null
     try {
       const logoResponse = await fetch('https://chessticks.vercel.app/logo.png')
       if (logoResponse.ok) {
         const logoBuffer = await logoResponse.arrayBuffer()
         logoData = `data:image/png;base64,${Buffer.from(logoBuffer).toString('base64')}`
       }
-    } catch (error) {
-      console.log('Failed to fetch logo, using fallback')
+    } catch (logoError) {
+      console.log('Failed to fetch logo, using fallback:', logoError)
     }
     return new ImageResponse(
       (
@@ -278,8 +277,8 @@ export async function GET(request: NextRequest) {
         height: 1200,
       }
     )
-  } catch (e: any) {
-    console.log(`${e.message}`)
+  } catch (error) {
+    console.log('Failed to generate image:', error)
     return new Response(`Failed to generate the image`, {
       status: 500,
     })

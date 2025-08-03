@@ -23,6 +23,19 @@ const unbounded = Unbounded({
   display: 'swap',
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#121212" }
+  ],
+};
+
 export const metadata: Metadata = {
   title: {
     default: "ChessTicks - Professional Chess Timer & Tournament Clock",
@@ -43,18 +56,7 @@ export const metadata: Metadata = {
   applicationName: "ChessTicks",
   generator: "Next.js",
   referrer: "origin-when-cross-origin",
-  colorScheme: "dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#121212" }
-  ],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover"
-  },
+
   robots: {
     index: true,
     follow: true,
@@ -279,7 +281,7 @@ export default function RootLayout({
       <head>
         {/* Preconnect to external domains for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link rel="preconnect" href="https://vercel.app" />
 
         {/* DNS prefetch for external resources */}
