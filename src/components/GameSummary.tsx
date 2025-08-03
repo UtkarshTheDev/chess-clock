@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useStatsStore } from "@/stores/statsStore";
 import { useTimerTypeStore } from "@/stores/timerTypeStore";
-import { Crown, Play, Home, Handshake } from "lucide-react";
+import { Crown, Play, Home, Handshake, BarChart3, Users, TrendingUp, Clock, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Tooltip } from "./ui/CustomTooltip";
 import { type PlayerStats, type MoveRecord } from "@/stores/statsStore";
@@ -312,9 +312,203 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
   );
 };
 
+// New Player Comparison Component
+const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; blackStats: PlayerStats }) => {
+  const ComparisonCard = ({
+    label,
+    whiteValue,
+    blackValue,
+    tooltip,
+    format = (val: number) => val.toFixed(1)
+  }: {
+    label: string;
+    whiteValue: number;
+    blackValue: number;
+    tooltip?: string;
+    format?: (val: number) => string;
+  }) => {
+    const whiteFormatted = format(whiteValue);
+    const blackFormatted = format(blackValue);
+    const whiteBetter = whiteValue < blackValue; // For time-based metrics, less is usually better
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-neutral-800/50 backdrop-blur-sm p-4 rounded-lg border border-white/5"
+      >
+        {tooltip ? (
+          <Tooltip text={tooltip}>
+            <div className="space-y-3">
+              <p className="text-sm text-neutral-400 text-center">{label}</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className={cn("text-center p-2 rounded", whiteBetter && "bg-green-500/10")}>
+                  <p className="text-xs text-neutral-500">White</p>
+                  <p className="text-lg font-semibold text-white">{whiteFormatted}</p>
+                </div>
+                <div className={cn("text-center p-2 rounded", !whiteBetter && "bg-green-500/10")}>
+                  <p className="text-xs text-neutral-500">Black</p>
+                  <p className="text-lg font-semibold text-white">{blackFormatted}</p>
+                </div>
+              </div>
+            </div>
+          </Tooltip>
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-neutral-400 text-center">{label}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className={cn("text-center p-2 rounded", whiteBetter && "bg-green-500/10")}>
+                <p className="text-xs text-neutral-500">White</p>
+                <p className="text-lg font-semibold text-white">{whiteFormatted}</p>
+              </div>
+              <div className={cn("text-center p-2 rounded", !whiteBetter && "bg-green-500/10")}>
+                <p className="text-xs text-neutral-500">Black</p>
+                <p className="text-lg font-semibold text-white">{blackFormatted}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    );
+  };
+
+  const whiteTotalMoves = whiteStats.moveHistory.length;
+  const blackTotalMoves = blackStats.moveHistory.length;
+  const whiteQuickMovesPercentage = whiteTotalMoves > 0 ? (whiteStats.quickMoves / whiteTotalMoves) * 100 : 0;
+  const blackQuickMovesPercentage = blackTotalMoves > 0 ? (blackStats.quickMoves / blackTotalMoves) * 100 : 0;
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-lg font-semibold text-white mb-2">Player Comparison</h3>
+        <p className="text-sm text-neutral-400">Side-by-side performance analysis</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ComparisonCard
+          label="Total Time Used"
+          whiteValue={whiteStats.totalTimeUsed}
+          blackValue={blackStats.totalTimeUsed}
+          tooltip="Total time spent during the game"
+          format={(val) => `${val.toFixed(1)}s`}
+        />
+        <ComparisonCard
+          label="Average Move Time"
+          whiteValue={whiteStats.averageTimePerMove}
+          blackValue={blackStats.averageTimePerMove}
+          tooltip="Average time per move"
+          format={(val) => `${val.toFixed(1)}s`}
+        />
+        <ComparisonCard
+          label="Fastest Move"
+          whiteValue={whiteStats.fastestMove}
+          blackValue={blackStats.fastestMove}
+          tooltip="Quickest move made (excluding first 2 moves)"
+          format={(val) => `${val.toFixed(1)}s`}
+        />
+        <ComparisonCard
+          label="Slowest Move"
+          whiteValue={whiteStats.slowestMove}
+          blackValue={blackStats.slowestMove}
+          tooltip="Longest move made"
+          format={(val) => `${val.toFixed(1)}s`}
+        />
+        <ComparisonCard
+          label="Quick Moves"
+          whiteValue={whiteQuickMovesPercentage}
+          blackValue={blackQuickMovesPercentage}
+          tooltip="Percentage of moves made under 10 seconds"
+          format={(val) => `${val.toFixed(1)}%`}
+        />
+        <ComparisonCard
+          label="Total Moves"
+          whiteValue={whiteTotalMoves}
+          blackValue={blackTotalMoves}
+          tooltip="Total number of moves made"
+          format={(val) => val.toString()}
+        />
+      </div>
+    </div>
+  );
+};
+
+// New Time Analysis Component (placeholder for now)
+const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; blackStats: PlayerStats }) => {
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-lg font-semibold text-white mb-2">Time Usage Analysis</h3>
+        <p className="text-sm text-neutral-400">Interactive time usage patterns and insights</p>
+      </div>
+
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-8 rounded-lg border border-white/5 text-center">
+        <Clock className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+        <p className="text-neutral-400">Interactive time analysis charts coming soon...</p>
+        <p className="text-sm text-neutral-500 mt-2">
+          Will include time usage graphs, move timing patterns, and phase-based analysis
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// New Performance Insights Component (placeholder for now)
+const PerformanceInsights = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; blackStats: PlayerStats }) => {
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-lg font-semibold text-white mb-2">Performance Insights</h3>
+        <p className="text-sm text-neutral-400">Actionable improvement recommendations</p>
+      </div>
+
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-8 rounded-lg border border-white/5 text-center">
+        <TrendingUp className="w-12 h-12 text-green-400 mx-auto mb-4" />
+        <p className="text-neutral-400">AI-powered performance insights coming soon...</p>
+        <p className="text-sm text-neutral-500 mt-2">
+          Will include improvement suggestions, pattern analysis, and training recommendations
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// Enhanced Move History Component
+const EnhancedMoveHistory = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; blackStats: PlayerStats }) => {
+  const allMoves = [...whiteStats.moveHistory, ...blackStats.moveHistory]
+    .sort((a, b) => a.moveNumber - b.moveNumber);
+
+  const fastestMove = allMoves.reduce((fastest, move) =>
+    move.time < fastest.time ? move : fastest, allMoves[0]);
+  const slowestMove = allMoves.reduce((slowest, move) =>
+    move.time > slowest.time ? move : slowest, allMoves[0]);
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center">
+        <h3 className="text-lg font-semibold text-white mb-2">Move History</h3>
+        <p className="text-sm text-neutral-400">Detailed move-by-move analysis</p>
+      </div>
+
+      <div className="space-y-2 max-h-96 overflow-y-auto">
+        {allMoves.map((move) => (
+          <MoveItem
+            key={`${move.by}-${move.moveNumber}`}
+            move={move}
+            isFastest={move === fastestMove}
+            isSlowest={move === slowestMove}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Enhanced tab types for the new 5-tab structure
+type TabType = "overview" | "comparison" | "timeAnalysis" | "insights" | "moveHistory";
+
 const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
   const { gameSummary } = useStatsStore();
-  const [activeTab, setActiveTab] = useState<"overview" | "analysis">("overview");
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
 
   if (!gameSummary) {
     console.error('GameSummary: No game summary data available');
@@ -354,34 +548,72 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           reason={endReason}
         />
 
-        <div className="flex p-2 gap-2 border-b border-white/5">
+        <div className="flex p-2 gap-1 border-b border-white/5 overflow-x-auto">
           <button
             onClick={() => setActiveTab("overview")}
             className={cn(
-              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "overview"
                 ? "bg-white/10 text-white"
                 : "text-neutral-400 hover:text-white hover:bg-white/5"
             )}
           >
+            <BarChart3 className="w-3 h-3" />
             Overview
           </button>
           <button
-            onClick={() => setActiveTab("analysis")}
+            onClick={() => setActiveTab("comparison")}
             className={cn(
-              "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all",
-              activeTab === "analysis"
+              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              activeTab === "comparison"
                 ? "bg-white/10 text-white"
                 : "text-neutral-400 hover:text-white hover:bg-white/5"
             )}
           >
-            Analysis
+            <Users className="w-3 h-3" />
+            Compare
+          </button>
+          <button
+            onClick={() => setActiveTab("timeAnalysis")}
+            className={cn(
+              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              activeTab === "timeAnalysis"
+                ? "bg-white/10 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <Clock className="w-3 h-3" />
+            Time
+          </button>
+          <button
+            onClick={() => setActiveTab("insights")}
+            className={cn(
+              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              activeTab === "insights"
+                ? "bg-white/10 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <TrendingUp className="w-3 h-3" />
+            Insights
+          </button>
+          <button
+            onClick={() => setActiveTab("moveHistory")}
+            className={cn(
+              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              activeTab === "moveHistory"
+                ? "bg-white/10 text-white"
+                : "text-neutral-400 hover:text-white hover:bg-white/5"
+            )}
+          >
+            <History className="w-3 h-3" />
+            Moves
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
-            {activeTab === "overview" ? (
+            {activeTab === "overview" && (
               <OverviewStats
                 stats={
                   winner === "white"
@@ -389,13 +621,29 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
                     : blackStats
                 }
               />
-            ) : (
-              <AnalysisStats
-                stats={
-                  winner === "white"
-                    ? whiteStats
-                    : blackStats
-                }
+            )}
+            {activeTab === "comparison" && (
+              <PlayerComparison
+                whiteStats={whiteStats}
+                blackStats={blackStats}
+              />
+            )}
+            {activeTab === "timeAnalysis" && (
+              <TimeAnalysis
+                whiteStats={whiteStats}
+                blackStats={blackStats}
+              />
+            )}
+            {activeTab === "insights" && (
+              <PerformanceInsights
+                whiteStats={whiteStats}
+                blackStats={blackStats}
+              />
+            )}
+            {activeTab === "moveHistory" && (
+              <EnhancedMoveHistory
+                whiteStats={whiteStats}
+                blackStats={blackStats}
               />
             )}
           </div>
