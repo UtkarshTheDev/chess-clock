@@ -18,7 +18,7 @@ import {
   Legend,
   ArcElement,
 } from 'chart.js';
-import { Line, Bar, Pie } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 
 // Register Chart.js components
 ChartJS.register(
@@ -158,143 +158,9 @@ const PhaseStats = ({ stats }: PhaseStatsProps) => {
   );
 };
 
-const MoveItem = ({
-  move,
-  isFastest,
-  isSlowest,
-}: {
-  move: MoveRecord;
-  isFastest: boolean;
-  isSlowest: boolean;
-}) => {
-  const getPhaseColor = () => {
-    switch (move.phase) {
-      case "opening":
-        return "text-blue-400";
-      case "middlegame":
-        return "text-yellow-400";
-      case "endgame":
-        return "text-red-400";
-      default:
-        return "text-white";
-    }
-  };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn(
-        "p-3 rounded-lg",
-        "bg-white/5 backdrop-blur-sm",
-        "border border-white/10",
-        isFastest && "border-green-500/50",
-        isSlowest && "border-red-500/50"
-      )}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-white/60">Move {move.moveNumber}</span>
-          <span className={cn("text-sm font-medium", getPhaseColor())}>
-            {move.phase ? move.phase.charAt(0).toUpperCase() + move.phase.slice(1) : 'Unknown'}
-          </span>
-        </div>
-        <span className="text-sm font-medium text-white">
-          {move.time.toFixed(1)}s
-        </span>
-      </div>
-    </motion.div>
-  );
-};
 
-const AnalysisStats = ({ stats }: { stats: PlayerStats }) => {
-  const totalMoves = stats.moveHistory.length;
-  const firstMove = stats.moveHistory[0];
-  const initialTime = firstMove ? firstMove.timeRemaining + firstMove.time : 0;
 
-  const slowMoves = stats.moveHistory.filter(
-    (move: MoveRecord) => move.time > initialTime * 0.05
-  ).length;
-
-  const criticalMoves = stats.moveHistory.filter(
-    (move: MoveRecord) => move.type !== "normal"
-  ).length;
-
-  const averageMoveTime =
-    stats.moveHistory.reduce((acc: number, move: MoveRecord) => acc + move.time, 0) / totalMoves;
-  const timeVariance =
-    stats.moveHistory.reduce(
-      (acc: number, move: MoveRecord) => acc + Math.pow(move.time - averageMoveTime, 2),
-      0
-    ) / totalMoves;
-  const consistencyScore = Math.max(0, 100 - timeVariance * 2).toFixed(1);
-  const moveHistory = [...stats.moveHistory].sort((a, b) => b.time - a.time);
-  const fastestMove = moveHistory[moveHistory.length - 1];
-  const slowestMove = moveHistory[0];
-
-  return (
-    <div className="grid grid-cols-2 gap-4">
-      <StatCard
-        label="Quick Moves"
-        value={`${stats.quickMoves}`}
-        tooltip={`Moves taking less than ${(initialTime * 0.01).toFixed(
-          1
-        )}s (1% of game duration)`}
-      />
-      <StatCard
-        label="Slow Moves"
-        value={`${slowMoves}`}
-        tooltip={`Moves taking more than ${(initialTime * 0.05).toFixed(
-          1
-        )}s (5% of game duration)`}
-      />
-      <StatCard
-        label="Critical Moves"
-        value={`${criticalMoves}`}
-        tooltip="Number of check and checkmate moves"
-      />
-      <StatCard
-        label="Time Variance"
-        value={`${timeVariance.toFixed(1)}`}
-        tooltip="Variance in move times (lower is more consistent)"
-      />
-      <StatCard
-        label="Consistency"
-        value={`${consistencyScore}%`}
-        tooltip="Overall consistency in move timing"
-      />
-      <StatCard
-        label="Avg Time Left"
-        value={`${(stats.timeRemaining / totalMoves).toFixed(1)}s`}
-        tooltip="Average time remaining after each move"
-      />
-      <div className="space-y-6">
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Phase Analysis
-          </h3>
-          <PhaseStats stats={stats} />
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Move History
-          </h3>
-          <div className="space-y-2">
-            {moveHistory.map((move) => (
-              <MoveItem
-                key={move.moveNumber}
-                move={move}
-                isFastest={move === fastestMove}
-                isSlowest={move === slowestMove}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
   const totalMoves = stats.moveHistory.length;
@@ -560,9 +426,6 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
   const [chartType, setChartType] = useState<'timeRemaining' | 'moveTime' | 'phaseAnalysis'>('timeRemaining');
 
   // Prepare data for time remaining chart
-  const allMoves = [...whiteStats.moveHistory, ...blackStats.moveHistory]
-    .sort((a, b) => a.moveNumber - b.moveNumber);
-
   const whiteTimeData = whiteStats.moveHistory.map((move: MoveRecord) => move.timeRemaining);
   const blackTimeData = blackStats.moveHistory.map((move: MoveRecord) => move.timeRemaining);
   const moveNumbers = Array.from({length: Math.max(whiteStats.moveHistory.length, blackStats.moveHistory.length)}, (_, i) => i + 1);
