@@ -6,6 +6,32 @@ import { Crown, Play, Home, Handshake, BarChart3, Users, TrendingUp, Clock, Hist
 import { cn } from "@/lib/utils";
 import { Tooltip } from "./ui/CustomTooltip";
 import { type PlayerStats, type MoveRecord } from "@/stores/statsStore";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip as ChartTooltip,
+  Legend,
+  ArcElement,
+} from 'chart.js';
+import { Line, Bar, Pie } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  ChartTooltip,
+  Legend,
+  ArcElement
+);
 
 interface GameSummaryProps {
   onNewGame: () => void;
@@ -195,10 +221,10 @@ const AnalysisStats = ({ stats }: { stats: PlayerStats }) => {
   ).length;
 
   const averageMoveTime =
-    stats.moveHistory.reduce((acc, move) => acc + move.time, 0) / totalMoves;
+    stats.moveHistory.reduce((acc: number, move: MoveRecord) => acc + move.time, 0) / totalMoves;
   const timeVariance =
     stats.moveHistory.reduce(
-      (acc, move) => acc + Math.pow(move.time - averageMoveTime, 2),
+      (acc: number, move: MoveRecord) => acc + Math.pow(move.time - averageMoveTime, 2),
       0
     ) / totalMoves;
   const consistencyScore = Math.max(0, 100 - timeVariance * 2).toFixed(1);
@@ -428,12 +454,182 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
           format={(val) => val.toString()}
         />
       </div>
+
+      {/* Phase Comparison Chart */}
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
+        <h4 className="text-lg font-semibold text-white mb-4 text-center">Phase-Based Time Distribution</h4>
+        <Bar
+          data={{
+            labels: ['Opening', 'Middlegame', 'Endgame'],
+            datasets: [
+              {
+                label: 'White',
+                data: [
+                  whiteStats.phaseStats.opening.totalTime,
+                  whiteStats.phaseStats.middlegame.totalTime,
+                  whiteStats.phaseStats.endgame.totalTime,
+                ],
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              },
+              {
+                label: 'Black',
+                data: [
+                  blackStats.phaseStats.opening.totalTime,
+                  blackStats.phaseStats.middlegame.totalTime,
+                  blackStats.phaseStats.endgame.totalTime,
+                ],
+                backgroundColor: 'rgba(156, 163, 175, 0.8)',
+              },
+            ],
+          }}
+          options={{
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top' as const,
+                labels: {
+                  color: 'rgb(255, 255, 255)',
+                },
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: 'rgb(156, 163, 175)',
+                },
+                grid: {
+                  color: 'rgba(156, 163, 175, 0.1)',
+                },
+              },
+              y: {
+                ticks: {
+                  color: 'rgb(156, 163, 175)',
+                },
+                grid: {
+                  color: 'rgba(156, 163, 175, 0.1)',
+                },
+              },
+            },
+          }}
+        />
+      </div>
     </div>
   );
 };
 
-// New Time Analysis Component (placeholder for now)
+// New Time Analysis Component with interactive charts
 const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; blackStats: PlayerStats }) => {
+  const [chartType, setChartType] = useState<'timeRemaining' | 'moveTime' | 'phaseAnalysis'>('timeRemaining');
+
+  // Prepare data for time remaining chart
+  const allMoves = [...whiteStats.moveHistory, ...blackStats.moveHistory]
+    .sort((a, b) => a.moveNumber - b.moveNumber);
+
+  const whiteTimeData = whiteStats.moveHistory.map((move: MoveRecord) => move.timeRemaining);
+  const blackTimeData = blackStats.moveHistory.map((move: MoveRecord) => move.timeRemaining);
+  const moveNumbers = Array.from({length: Math.max(whiteStats.moveHistory.length, blackStats.moveHistory.length)}, (_, i) => i + 1);
+
+  const timeRemainingData = {
+    labels: moveNumbers,
+    datasets: [
+      {
+        label: 'White Time Remaining',
+        data: whiteTimeData,
+        borderColor: 'rgb(255, 255, 255)',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        tension: 0.1,
+      },
+      {
+        label: 'Black Time Remaining',
+        data: blackTimeData,
+        borderColor: 'rgb(156, 163, 175)',
+        backgroundColor: 'rgba(156, 163, 175, 0.1)',
+        tension: 0.1,
+      },
+    ],
+  };
+
+  // Prepare data for move time chart
+  const whiteMoveTimeData = whiteStats.moveHistory.map((move: MoveRecord) => move.time);
+  const blackMoveTimeData = blackStats.moveHistory.map((move: MoveRecord) => move.time);
+
+  const moveTimeData = {
+    labels: moveNumbers,
+    datasets: [
+      {
+        label: 'White Move Time',
+        data: whiteMoveTimeData,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      },
+      {
+        label: 'Black Move Time',
+        data: blackMoveTimeData,
+        backgroundColor: 'rgba(156, 163, 175, 0.8)',
+      },
+    ],
+  };
+
+  // Prepare data for phase analysis
+  const phaseData = {
+    labels: ['Opening', 'Middlegame', 'Endgame'],
+    datasets: [
+      {
+        label: 'White',
+        data: [
+          whiteStats.phaseStats.opening.totalTime,
+          whiteStats.phaseStats.middlegame.totalTime,
+          whiteStats.phaseStats.endgame.totalTime,
+        ],
+        backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(59, 130, 246, 0.6)', 'rgba(59, 130, 246, 0.4)'],
+      },
+      {
+        label: 'Black',
+        data: [
+          blackStats.phaseStats.opening.totalTime,
+          blackStats.phaseStats.middlegame.totalTime,
+          blackStats.phaseStats.endgame.totalTime,
+        ],
+        backgroundColor: ['rgba(156, 163, 175, 0.8)', 'rgba(156, 163, 175, 0.6)', 'rgba(156, 163, 175, 0.4)'],
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: 'rgb(255, 255, 255)',
+        },
+      },
+      title: {
+        display: true,
+        text: chartType === 'timeRemaining' ? 'Time Remaining Over Moves' :
+              chartType === 'moveTime' ? 'Move Time Analysis' : 'Phase-Based Time Usage',
+        color: 'rgb(255, 255, 255)',
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: 'rgb(156, 163, 175)',
+        },
+        grid: {
+          color: 'rgba(156, 163, 175, 0.1)',
+        },
+      },
+      y: {
+        ticks: {
+          color: 'rgb(156, 163, 175)',
+        },
+        grid: {
+          color: 'rgba(156, 163, 175, 0.1)',
+        },
+      },
+    },
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -441,12 +637,78 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
         <p className="text-sm text-neutral-400">Interactive time usage patterns and insights</p>
       </div>
 
-      <div className="bg-neutral-800/50 backdrop-blur-sm p-8 rounded-lg border border-white/5 text-center">
-        <Clock className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-        <p className="text-neutral-400">Interactive time analysis charts coming soon...</p>
-        <p className="text-sm text-neutral-500 mt-2">
-          Will include time usage graphs, move timing patterns, and phase-based analysis
-        </p>
+      {/* Chart Type Selector */}
+      <div className="flex justify-center gap-2">
+        <button
+          onClick={() => setChartType('timeRemaining')}
+          className={cn(
+            "px-3 py-2 rounded-lg text-xs font-medium transition-all",
+            chartType === 'timeRemaining'
+              ? "bg-blue-600 text-white"
+              : "bg-neutral-800 text-neutral-400 hover:text-white"
+          )}
+        >
+          Time Remaining
+        </button>
+        <button
+          onClick={() => setChartType('moveTime')}
+          className={cn(
+            "px-3 py-2 rounded-lg text-xs font-medium transition-all",
+            chartType === 'moveTime'
+              ? "bg-blue-600 text-white"
+              : "bg-neutral-800 text-neutral-400 hover:text-white"
+          )}
+        >
+          Move Times
+        </button>
+        <button
+          onClick={() => setChartType('phaseAnalysis')}
+          className={cn(
+            "px-3 py-2 rounded-lg text-xs font-medium transition-all",
+            chartType === 'phaseAnalysis'
+              ? "bg-blue-600 text-white"
+              : "bg-neutral-800 text-neutral-400 hover:text-white"
+          )}
+        >
+          Phase Analysis
+        </button>
+      </div>
+
+      {/* Chart Display */}
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
+        {chartType === 'timeRemaining' && (
+          <Line data={timeRemainingData} options={chartOptions} />
+        )}
+        {chartType === 'moveTime' && (
+          <Bar data={moveTimeData} options={chartOptions} />
+        )}
+        {chartType === 'phaseAnalysis' && (
+          <Bar data={phaseData} options={chartOptions} />
+        )}
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          label="Avg White Move"
+          value={`${whiteStats.averageTimePerMove.toFixed(1)}s`}
+          tooltip="Average time per move for White"
+        />
+        <StatCard
+          label="Avg Black Move"
+          value={`${blackStats.averageTimePerMove.toFixed(1)}s`}
+          tooltip="Average time per move for Black"
+        />
+        <StatCard
+          label="Time Difference"
+          value={`${Math.abs(whiteStats.totalTimeUsed - blackStats.totalTimeUsed).toFixed(1)}s`}
+          tooltip="Difference in total time used"
+        />
+        <StatCard
+          label="Longest Move"
+          value={`${Math.max(whiteStats.slowestMove, blackStats.slowestMove).toFixed(1)}s`}
+          tooltip="Longest move in the game"
+        />
       </div>
     </div>
   );
