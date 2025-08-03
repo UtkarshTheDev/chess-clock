@@ -628,7 +628,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           )}
 
           {/* Main Time Display */}
-          <span className="font-sourGummy text-8xl lg:text-9xl font-bold">
+          <span className="font-unbounded text-8xl lg:text-9xl font-bold">
             {formatTime(time)}
           </span>
         </div>
@@ -636,9 +636,9 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         {/* Action Buttons */}
         <motion.div
           className={cn(
-            "absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-20 action-button-container",
-            // Add semi-transparent background for buttons on white background for better contrast
-            needsContrastBackground ? "p-2 rounded-lg bg-gray-800/30 backdrop-blur-md" : ""
+            "absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 action-button-container",
+            // Enhanced contrast background for better visibility on white timer squares
+            needsContrastBackground && "p-3 rounded-2xl bg-black/20 backdrop-blur-xl border border-black/10 shadow-2xl"
           )}
           initial={false}
           data-action-button-container="true"

@@ -51,7 +51,13 @@ const config: Config = {
           "5": "hsl(var(--chart-5))",
         },
         neutral: {
-          // ... existing neutral colors
+          50: "#F9FAFB",
+          100: "#F3F4F6",
+          200: "#E5E7EB",
+          300: "#D1D5DB",
+          400: "#A1A1AA",
+          500: "#71717A",
+          600: "#52525B",
           700: "#404040",
           800: "#262626",
           900: "#171717",

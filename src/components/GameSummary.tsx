@@ -1222,19 +1222,19 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-4xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[90vh] overflow-hidden flex flex-col game-summary-dialog"
+        className="w-full max-w-5xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[95vh] overflow-hidden flex flex-col game-summary-dialog"
       >
         <WinnerBanner
           winner={winner}
           reason={endReason}
         />
 
-        <div className="flex justify-center p-3 border-b border-white/5">
-          <div className="flex gap-2 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm">
+        <div className="flex justify-center px-6 py-2 border-b border-white/5">
+          <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm">
           <button
             onClick={() => setActiveTab("overview")}
             className={cn(
-              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "overview"
                 ? "bg-white text-neutral-900 shadow-sm"
                 : "text-neutral-300 hover:text-white hover:bg-white/10"
@@ -1246,7 +1246,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("comparison")}
             className={cn(
-              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "comparison"
                 ? "bg-white text-neutral-900 shadow-sm"
                 : "text-neutral-300 hover:text-white hover:bg-white/10"
@@ -1258,7 +1258,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("timeAnalysis")}
             className={cn(
-              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "timeAnalysis"
                 ? "bg-white text-neutral-900 shadow-sm"
                 : "text-neutral-300 hover:text-white hover:bg-white/10"
@@ -1270,7 +1270,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("insights")}
             className={cn(
-              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "insights"
                 ? "bg-white text-neutral-900 shadow-sm"
                 : "text-neutral-300 hover:text-white hover:bg-white/10"
@@ -1282,7 +1282,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("moveHistory")}
             className={cn(
-              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
               activeTab === "moveHistory"
                 ? "bg-white text-neutral-900 shadow-sm"
                 : "text-neutral-300 hover:text-white hover:bg-white/10"
@@ -1294,8 +1294,8 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-          <div className="space-y-6 max-w-full overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
+          <div className="space-y-8 max-w-full overflow-hidden min-h-0">
             {activeTab === "overview" && (
               <OverviewStats
                 stats={
@@ -1347,7 +1347,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
           {/* Content container */}
-          <div className="relative p-6 flex gap-4 flex-wrap sm:flex-nowrap">
+          <div className="relative p-4 flex gap-3 flex-wrap sm:flex-nowrap">
             {/* Exit Button */}
             <motion.button
               whileHover={{
@@ -1356,7 +1356,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
               }}
               whileTap={{ scale: 0.98 }}
               onClick={onExit}
-              className="group flex-1 flex items-center justify-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-neutral-700 to-neutral-600 hover:from-neutral-600 hover:to-neutral-500 transition-all duration-300 text-white font-medium shadow-lg border border-white/10 backdrop-blur-sm"
+              className="group flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-neutral-700 to-neutral-600 hover:from-neutral-600 hover:to-neutral-500 transition-all duration-300 text-white font-medium shadow-lg border border-white/10 backdrop-blur-sm"
             >
               <motion.div
                 whileHover={{ rotate: -10 }}
@@ -1377,7 +1377,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
               }}
               whileTap={{ scale: 0.98 }}
               onClick={onNewGame}
-              className="group flex-1 flex items-center justify-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-400 hover:to-blue-500 transition-all duration-300 text-white font-medium shadow-lg shadow-blue-500/25 border border-blue-400/20 backdrop-blur-sm relative overflow-hidden"
+              className="group flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-400 hover:to-blue-500 transition-all duration-300 text-white font-medium shadow-lg shadow-blue-500/25 border border-blue-400/20 backdrop-blur-sm relative overflow-hidden"
             >
               {/* Animated background shimmer */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />

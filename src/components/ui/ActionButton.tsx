@@ -18,16 +18,16 @@ export const ActionButton = ({
 }: ActionButtonProps) => {
   const variants = {
     check: {
-      base: "bg-gradient-to-br from-emerald-500/70 to-emerald-600/80 border-emerald-500/70 text-emerald-50 hover:from-emerald-500/80 hover:to-emerald-600/90 shadow-emerald-900/30",
-      disabled: "bg-neutral-700/80 border-neutral-600/70 text-neutral-200 shadow-neutral-900/20",
+      base: "bg-gradient-to-br from-emerald-600 to-emerald-700 border-emerald-500 text-white hover:from-emerald-500 hover:to-emerald-600 shadow-lg shadow-emerald-500/25",
+      disabled: "bg-neutral-600/90 border-neutral-500/70 text-neutral-300 shadow-lg shadow-neutral-900/20",
     },
     checkmate: {
-      base: "bg-gradient-to-br from-amber-500/70 to-amber-600/80 border-amber-500/70 text-amber-50 hover:from-amber-500/80 hover:to-amber-600/90 shadow-amber-900/30",
-      disabled: "bg-neutral-700/80 border-neutral-600/70 text-neutral-200 shadow-neutral-900/20",
+      base: "bg-gradient-to-br from-amber-600 to-amber-700 border-amber-500 text-white hover:from-amber-500 hover:to-amber-600 shadow-lg shadow-amber-500/25",
+      disabled: "bg-neutral-600/90 border-neutral-500/70 text-neutral-300 shadow-lg shadow-neutral-900/20",
     },
     draw: {
-      base: "bg-gradient-to-br from-blue-500/70 to-blue-600/80 border-blue-500/70 text-blue-50 hover:from-blue-500/80 hover:to-blue-600/90 shadow-blue-900/30",
-      disabled: "bg-neutral-700/80 border-neutral-600/70 text-neutral-200 shadow-neutral-900/20",
+      base: "bg-gradient-to-br from-blue-600 to-blue-700 border-blue-500 text-white hover:from-blue-500 hover:to-blue-600 shadow-lg shadow-blue-500/25",
+      disabled: "bg-neutral-600/90 border-neutral-500/70 text-neutral-300 shadow-lg shadow-neutral-900/20",
     },
   };
 
@@ -37,33 +37,44 @@ export const ActionButton = ({
       disabled={disabled}
       data-action-button={variant}
       className={cn(
-        "px-4 py-2 rounded-lg",
-        "border-2 transition-all duration-200",
-        "flex items-center gap-2",
-        "font-medium text-sm",
-        "shadow-lg hover:shadow-xl backdrop-blur-md",
-        "transform hover:-translate-y-0.5",
+        "px-4 py-2.5 rounded-xl",
+        "border-2 transition-all duration-300",
+        "flex items-center gap-2.5",
+        "font-semibold text-sm",
+        "backdrop-blur-md relative overflow-hidden",
+        "transform hover:-translate-y-1 active:translate-y-0",
         disabled ? variants[variant].disabled : variants[variant].base,
+        // Enhanced styling for better visibility on white backgrounds
+        "ring-1 ring-black/10",
         // Additional disabled state styling for better visual feedback
-        disabled && "opacity-75 cursor-not-allowed"
+        disabled && "opacity-60 cursor-not-allowed hover:translate-y-0"
       )}
-      whileHover={{ scale: disabled ? 1 : 1.02 }}
-      whileTap={{ scale: disabled ? 1 : 0.98 }}
+      whileHover={{
+        scale: disabled ? 1 : 1.05,
+        boxShadow: disabled ? undefined : "0 10px 25px rgba(0, 0, 0, 0.2)"
+      }}
+      whileTap={{ scale: disabled ? 1 : 0.95 }}
       initial={false}
     >
+      {/* Subtle shine effect for premium feel */}
+      {!disabled && (
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+      )}
+
       <motion.span
         initial={false}
         animate={{ rotate: 0 }}
+        whileHover={{ rotate: disabled ? 0 : 5, scale: disabled ? 1 : 1.1 }}
         className={cn(
-          "transform transition-transform",
-          disabled && "opacity-90"
+          "transform transition-all duration-200 relative z-10",
+          disabled && "opacity-80"
         )}
       >
         {icon}
       </motion.span>
       <span className={cn(
-        "font-semibold tracking-wide",
-        disabled && "opacity-90"
+        "font-bold tracking-wide relative z-10",
+        disabled && "opacity-80"
       )}>
         {label}
       </span>

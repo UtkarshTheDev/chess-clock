@@ -20,8 +20,8 @@ export const KeyboardShortcuts: React.FC = () => {
           className="flex items-center gap-2"
           whileHover={{ scale: 1.05 }}
         >
-          <span className="text-neutral-400">{action}:</span>
-          <kbd className="px-2 py-1 rounded bg-neutral-800 text-white font-mono text-sm">
+          <span className="text-neutral-400 font-ubuntu text-sm">{action}:</span>
+          <kbd className="px-2 py-1 rounded bg-neutral-800 text-white text-xs font-unbounded">
             {key}
           </kbd>
         </motion.div>
