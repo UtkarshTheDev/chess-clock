@@ -169,7 +169,7 @@ const WinnerBanner = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className={cn(
-            "text-4xl font-bold mb-2 tracking-wide",
+            "text-4xl font-bold mb-2 tracking-wide font-unbounded",
             colors.textColor,
             "drop-shadow-lg"
           )}
@@ -183,14 +183,14 @@ const WinnerBanner = ({
           transition={{ delay: 0.5 }}
           className="space-y-2"
         >
-          <p className="text-lg font-medium text-white/90 capitalize">
+          <p className="text-[24px] font-medium text-white/90 capitalize font-ubuntu">
             {reason === "timeout" ? "Time Forfeit" :
              reason === "checkmate" ? "Checkmate" :
              reason === "by agreement" ? "By Agreement" :
              reason}
           </p>
 
-          <div className="flex items-center justify-center gap-2 text-sm text-white/70">
+          <div className="flex items-center justify-center gap-2 text-sm font-ubuntuCondensed text-white/80">
             <Clock className="w-4 h-4" />
             <span>{getDetailedDisplayName()}</span>
           </div>
@@ -1332,26 +1332,69 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           </div>
         </div>
 
-        <div className="p-4 border-t border-white/5 flex gap-3 flex-wrap sm:flex-nowrap">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onExit}
-            className="flex-1 flex items-center justify-center text-slate-300 gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm font-medium"
-          >
-            <Home className="w-4 h-4" />
-            Exit
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onNewGame}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 transition-colors text-sm font-medium"
-          >
-            <Play className="w-4 h-4" />
-                        New Game
-                      </motion.button>
-                    </div>
+        {/* Enhanced Action Buttons Dock */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="relative"
+        >
+          {/* Sophisticated backdrop with gradient and blur */}
+          <div className="absolute inset-0 bg-gradient-to-r from-neutral-800/80 via-neutral-700/60 to-neutral-800/80 backdrop-blur-xl" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+
+          {/* Subtle top border with gradient */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+          {/* Content container */}
+          <div className="relative p-6 flex gap-4 flex-wrap sm:flex-nowrap">
+            {/* Exit Button */}
+            <motion.button
+              whileHover={{
+                scale: 1.02,
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)"
+              }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onExit}
+              className="group flex-1 flex items-center justify-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-neutral-700 to-neutral-600 hover:from-neutral-600 hover:to-neutral-500 transition-all duration-300 text-white font-medium shadow-lg border border-white/10 backdrop-blur-sm"
+            >
+              <motion.div
+                whileHover={{ rotate: -10 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <Home className="w-5 h-5 text-neutral-300 group-hover:text-white transition-colors" />
+              </motion.div>
+              <span className="text-neutral-200 group-hover:text-white transition-colors">
+                Exit
+              </span>
+            </motion.button>
+
+            {/* New Game Button */}
+            <motion.button
+              whileHover={{
+                scale: 1.02,
+                boxShadow: "0 8px 32px rgba(59, 130, 246, 0.4)"
+              }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onNewGame}
+              className="group flex-1 flex items-center justify-center gap-3 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-400 hover:to-blue-500 transition-all duration-300 text-white font-medium shadow-lg shadow-blue-500/25 border border-blue-400/20 backdrop-blur-sm relative overflow-hidden"
+            >
+              {/* Animated background shimmer */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+
+              <motion.div
+                whileHover={{ rotate: 15, scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 400 }}
+                className="relative z-10"
+              >
+                <Play className="w-5 h-5 text-blue-100 group-hover:text-white transition-colors" />
+              </motion.div>
+              <span className="relative z-10 text-blue-100 group-hover:text-white transition-colors font-semibold">
+                New Game
+              </span>
+            </motion.button>
+          </div>
+        </motion.div>
                   </motion.div>
                 </motion.div>
               );
