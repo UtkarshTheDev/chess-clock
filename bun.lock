@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "chess-timer",
+      "name": "ChessTicks",
       "dependencies": {
         "@radix-ui/react-progress": "^1.1.0",
         "@radix-ui/react-slider": "^1.2.1",

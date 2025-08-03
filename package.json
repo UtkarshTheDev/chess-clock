@@ -7,10 +7,10 @@
   "homepage": "https://chessticks.vercel.app",
   "repository": {
     "type": "git",
-    "url": "https://github.com/UtkarshTheDev/chess-timer.git"
+    "url": "https://github.com/UtkarshTheDev/ChessTicks.git"
   },
   "bugs": {
-    "url": "https://github.com/UtkarshTheDev/chess-timer/issues"
+    "url": "https://github.com/UtkarshTheDev/ChessTicks/issues"
   },
   "license": "MIT",
   "author": {

@@ -82,8 +82,8 @@ Want to contribute to ChessTicks or run it locally? Here's how to get started:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/UtkarshTheDev/chess-timer.git
-   cd chess-timer
+   git clone https://github.com/UtkarshTheDev/ChessTicks.git
+   cd ChessTicks
    ```
 
 2. **Install dependencies**
@@ -272,8 +272,8 @@ We welcome contributions from the chess and developer community! Whether you're 
 
 ## 📞 Support & Community
 
-- **🐛 Bug Reports**: [GitHub Issues](https://github.com/UtkarshTheDev/chess-timer/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/UtkarshTheDev/chess-timer/discussions)
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/UtkarshTheDev/ChessTicks/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/UtkarshTheDev/ChessTicks/discussions)
 - **📧 Contact**: your.email@example.com
 - **🌐 Live App**: [chessticks.vercel.app](https://chessticks.vercel.app)
 
