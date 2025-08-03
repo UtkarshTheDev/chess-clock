@@ -33,6 +33,66 @@ ChartJS.register(
   ArcElement
 );
 
+// Custom styles for the game summary dialog
+const customStyles = `
+  .game-summary-dialog {
+    contain: layout style;
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.4) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.4);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.6);
+    background-clip: content-box;
+  }
+
+  .tooltip-container {
+    position: relative;
+    overflow: visible;
+  }
+
+  .tooltip-container [data-tooltip] {
+    max-width: calc(100vw - 2rem);
+    word-wrap: break-word;
+  }
+
+  @media (max-width: 768px) {
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+  }
+`;
+
+// Inject styles
+if (typeof document !== 'undefined') {
+  const styleId = 'game-summary-styles';
+  if (!document.getElementById(styleId)) {
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = customStyles;
+    document.head.appendChild(style);
+  }
+}
+
 interface GameSummaryProps {
   onNewGame: () => void;
   onExit: () => void;
@@ -47,37 +107,96 @@ const WinnerBanner = ({
 }) => {
   const { getDetailedDisplayName } = useTimerTypeStore();
 
+  const getWinnerColors = () => {
+    if (winner === "draw") {
+      return {
+        gradient: "from-blue-600 via-blue-500 to-blue-600",
+        iconColor: "text-blue-300",
+        textColor: "text-blue-100",
+        bgOverlay: "bg-blue-500/10"
+      };
+    }
+    return {
+      gradient: "from-amber-600 via-yellow-500 to-amber-600",
+      iconColor: "text-amber-300",
+      textColor: "text-amber-100",
+      bgOverlay: "bg-amber-500/10"
+    };
+  };
+
+  const colors = getWinnerColors();
+
   return (
-  <motion.div
-    initial={{ opacity: 0, y: -20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="p-6 text-center border-b border-white/5"
-  >
     <motion.div
-      initial={{ scale: 0.9 }}
-      animate={{ scale: 1 }}
-      transition={{ delay: 0.2 }}
-      className="flex items-center justify-center gap-3 mb-2"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cn(
+        "relative p-8 text-center border-b border-white/10",
+        "bg-gradient-to-r", colors.gradient,
+        "before:absolute before:inset-0 before:bg-black/20 before:backdrop-blur-sm"
+      )}
     >
-      {winner === "draw" ? (
-        <Handshake className="w-8 h-8 text-blue-400" />
-      ) : (
-        <Crown className="w-8 h-8 text-amber-400" />
-      )}
-      <h2 className="text-2xl font-bold text-white">
-        {winner === "draw" ? "Draw" : `${winner} Wins!`}
-      </h2>
-      {winner === "draw" ? (
-        <Handshake className="w-8 h-8 text-blue-400" />
-      ) : (
-        <Crown className="w-8 h-8 text-amber-400" />
-      )}
+      <div className={cn("absolute inset-0", colors.bgOverlay)} />
+
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+        className="relative z-10"
+      >
+        <div className="flex items-center justify-center gap-4 mb-4">
+          {winner === "draw" ? (
+            <motion.div
+              initial={{ rotate: -180 }}
+              animate={{ rotate: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              <Handshake className={cn("w-12 h-12", colors.iconColor)} />
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ rotate: -180, scale: 0.5 }}
+              animate={{ rotate: 0, scale: 1 }}
+              transition={{ delay: 0.4, duration: 0.6, type: "spring" }}
+            >
+              <Crown className={cn("w-12 h-12", colors.iconColor)} />
+            </motion.div>
+          )}
+        </div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className={cn(
+            "text-4xl font-bold mb-2 tracking-wide",
+            colors.textColor,
+            "drop-shadow-lg"
+          )}
+        >
+          {winner === "draw" ? "Game Drawn" : `${winner.charAt(0).toUpperCase() + winner.slice(1)} Wins!`}
+        </motion.h1>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="space-y-2"
+        >
+          <p className="text-lg font-medium text-white/90 capitalize">
+            {reason === "timeout" ? "Time Forfeit" :
+             reason === "checkmate" ? "Checkmate" :
+             reason === "by agreement" ? "By Agreement" :
+             reason}
+          </p>
+
+          <div className="flex items-center justify-center gap-2 text-sm text-white/70">
+            <Clock className="w-4 h-4" />
+            <span>{getDetailedDisplayName()}</span>
+          </div>
+        </motion.div>
+      </motion.div>
     </motion.div>
-    <p className="text-neutral-400">{reason}</p>
-    <div className="mt-2 text-sm text-neutral-500">
-      Timer Type: {getDetailedDisplayName()}
-    </div>
-  </motion.div>
   );
 };
 
@@ -93,18 +212,18 @@ const StatCard = ({
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className="bg-neutral-800/50 backdrop-blur-sm p-4 rounded-lg border border-white/5"
+    className="bg-neutral-800/50 backdrop-blur-sm p-4 rounded-lg border border-white/5 tooltip-container"
   >
     {tooltip ? (
       <Tooltip text={tooltip}>
-        <div className="space-y-1">
-          <p className="text-sm text-neutral-400">{label}</p>
+        <div className="space-y-1 cursor-help">
+          <p className="text-sm text-neutral-400 truncate">{label}</p>
           <p className="text-lg font-semibold text-white">{value}</p>
         </div>
       </Tooltip>
     ) : (
       <div className="space-y-1">
-        <p className="text-sm text-neutral-400">{label}</p>
+        <p className="text-sm text-neutral-400 truncate">{label}</p>
         <p className="text-lg font-semibold text-white">{value}</p>
       </div>
     )}
@@ -1103,21 +1222,22 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-2xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[90vh] overflow-hidden flex flex-col"
+        className="w-full max-w-4xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[90vh] overflow-hidden flex flex-col game-summary-dialog"
       >
         <WinnerBanner
           winner={winner}
           reason={endReason}
         />
 
-        <div className="flex p-2 gap-1 border-b border-white/5 overflow-x-auto">
+        <div className="flex justify-center p-3 border-b border-white/5">
+          <div className="flex gap-2 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm">
           <button
             onClick={() => setActiveTab("overview")}
             className={cn(
-              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
               activeTab === "overview"
-                ? "bg-white/10 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-white/5"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-300 hover:text-white hover:bg-white/10"
             )}
           >
             <BarChart3 className="w-3 h-3" />
@@ -1126,10 +1246,10 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("comparison")}
             className={cn(
-              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
               activeTab === "comparison"
-                ? "bg-white/10 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-white/5"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-300 hover:text-white hover:bg-white/10"
             )}
           >
             <Users className="w-3 h-3" />
@@ -1138,10 +1258,10 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("timeAnalysis")}
             className={cn(
-              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
               activeTab === "timeAnalysis"
-                ? "bg-white/10 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-white/5"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-300 hover:text-white hover:bg-white/10"
             )}
           >
             <Clock className="w-3 h-3" />
@@ -1150,10 +1270,10 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("insights")}
             className={cn(
-              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
               activeTab === "insights"
-                ? "bg-white/10 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-white/5"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-300 hover:text-white hover:bg-white/10"
             )}
           >
             <TrendingUp className="w-3 h-3" />
@@ -1162,19 +1282,20 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <button
             onClick={() => setActiveTab("moveHistory")}
             className={cn(
-              "flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+              "flex items-center gap-2 py-2 px-4 rounded-lg text-sm font-medium transition-all whitespace-nowrap",
               activeTab === "moveHistory"
-                ? "bg-white/10 text-white"
-                : "text-neutral-400 hover:text-white hover:bg-white/5"
+                ? "bg-white text-neutral-900 shadow-sm"
+                : "text-neutral-300 hover:text-white hover:bg-white/10"
             )}
           >
             <History className="w-3 h-3" />
             Moves
           </button>
+          </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+          <div className="space-y-6 max-w-full overflow-hidden">
             {activeTab === "overview" && (
               <OverviewStats
                 stats={
