@@ -158,14 +158,14 @@ export default function Home() {
             priority
           />
           <h1 className="text-lg font-bold text-white tracking-tight font-unbounded">
-            ChessTicks - Professional Chess Timer
+            Chess Ticks
           </h1>
         </div>
 
         <div className="mt-4 flex justify-center items-center w-full flex-col space-y-6">
           {/* Duration Section */}
           <div className="text-white py-4 font-ubuntu flex flex-col items-center justify-center w-full space-y-3">
-            <h2 className="text-lg font-bold font-ubuntu">Chess Game Duration - Time Controls</h2>
+            <h2 className="text-lg font-semibold font-ubuntu">Duration</h2>
             <div className="grid grid-cols-3 gap-4 w-full justify-center items-center">
               {durations.map((duration, index) => (
                 <button
@@ -199,7 +199,7 @@ export default function Home() {
 
           {/* Type Section */}
           <div className="text-white py-4 font-ubuntu flex flex-col items-center justify-center w-full space-y-3 border-t border-neutral-500">
-            <h2 className="text-lg font-bold font-ubuntu">Tournament Timer Modes - Professional Chess Formats</h2>
+            <h2 className="text-lg font-semibold font-ubuntu">Timer Modes</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full justify-center items-center">
               {types.map((typeItem, index) => (
                 <button

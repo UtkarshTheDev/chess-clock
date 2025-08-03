@@ -146,131 +146,133 @@ export const metadata: Metadata = {
   }
 };
 
+// Static structured data to prevent hydration mismatch
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "@id": "https://chessticks.vercel.app/#webapp",
+      "name": "ChessTicks",
+      "alternateName": "Chess Timer",
+      "description": "Professional chess timer with all 5 tournament modes: Sudden Death, Fischer Increment, Simple Delay, Bronstein Delay & Multi-Stage. Perfect for chess players and tournaments.",
+      "url": "https://chessticks.vercel.app",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Web Browser",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "1.0.0",
+      "datePublished": "2024-01-01",
+      "dateModified": "2024-08-03",
+      "author": {
+        "@type": "Person",
+        "name": "Utkarsh Tiwari",
+        "url": "https://github.com/UtkarshTheDev"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "ChessTicks",
+        "url": "https://chessticks.vercel.app"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "availability": "https://schema.org/InStock"
+      },
+      "featureList": [
+        "Sudden Death Timer",
+        "Fischer Increment Timer",
+        "Simple Delay Timer",
+        "Bronstein Delay Timer",
+        "Multi-Stage Tournament Timer",
+        "Professional Tournament Support",
+        "Mobile Responsive Design",
+        "Audio Feedback",
+        "Gesture Controls",
+        "Game Statistics"
+      ],
+      "screenshot": "https://chessticks.vercel.app/og-image.png",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "150",
+        "bestRating": "5",
+        "worstRating": "1"
+      }
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://chessticks.vercel.app/#software",
+      "name": "ChessTicks Chess Timer",
+      "applicationCategory": "Game",
+      "applicationSubCategory": "Chess Timer",
+      "operatingSystem": "Web Browser, iOS, Android",
+      "url": "https://chessticks.vercel.app",
+      "downloadUrl": "https://chessticks.vercel.app",
+      "installUrl": "https://chessticks.vercel.app",
+      "softwareVersion": "1.0.0",
+      "fileSize": "2MB",
+      "price": "0",
+      "priceCurrency": "USD",
+      "author": {
+        "@type": "Person",
+        "name": "Utkarsh Tiwari"
+      },
+      "description": "Professional chess timer application supporting all major tournament time controls including Sudden Death, Fischer Increment, Simple Delay, Bronstein Delay, and Multi-Stage formats.",
+      "featureList": [
+        "All 5 Major Tournament Timer Modes",
+        "Professional Tournament Support",
+        "Blitz, Rapid, and Classical Time Controls",
+        "Mobile and Desktop Compatible",
+        "Real-time Game Statistics",
+        "Audio and Visual Feedback",
+        "Gesture-based Controls",
+        "Offline Capability"
+      ],
+      "screenshot": [
+        "https://chessticks.vercel.app/og-image.png",
+        "https://chessticks.vercel.app/screenshot-timer.png"
+      ]
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://chessticks.vercel.app/#organization",
+      "name": "ChessTicks",
+      "url": "https://chessticks.vercel.app",
+      "logo": "https://chessticks.vercel.app/logo.png",
+      "description": "Professional chess timer application for players and tournaments",
+      "foundingDate": "2024",
+      "founder": {
+        "@type": "Person",
+        "name": "Utkarsh Tiwari"
+      },
+      "sameAs": [
+        "https://github.com/UtkarshTheDev/ChessTicks"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://chessticks.vercel.app/#website",
+      "url": "https://chessticks.vercel.app",
+      "name": "ChessTicks",
+      "description": "Professional chess timer with all tournament modes",
+      "publisher": {
+        "@id": "https://chessticks.vercel.app/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://chessticks.vercel.app/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  ]
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebApplication",
-        "@id": "https://chessticks.vercel.app/#webapp",
-        "name": "ChessTicks",
-        "alternateName": "Chess Timer",
-        "description": "Professional chess timer with all 5 tournament modes: Sudden Death, Fischer Increment, Simple Delay, Bronstein Delay & Multi-Stage. Perfect for chess players and tournaments.",
-        "url": "https://chessticks.vercel.app",
-        "applicationCategory": "GameApplication",
-        "operatingSystem": "Web Browser",
-        "browserRequirements": "Requires JavaScript. Requires HTML5.",
-        "softwareVersion": "1.0.0",
-        "datePublished": "2024-01-01",
-        "dateModified": new Date().toISOString().split('T')[0],
-        "author": {
-          "@type": "Person",
-          "name": "Utkarsh Tiwari",
-          "url": "https://github.com/UtkarshTheDev"
-        },
-        "publisher": {
-          "@type": "Organization",
-          "name": "ChessTicks",
-          "url": "https://chessticks.vercel.app"
-        },
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "USD",
-          "availability": "https://schema.org/InStock"
-        },
-        "featureList": [
-          "Sudden Death Timer",
-          "Fischer Increment Timer",
-          "Simple Delay Timer",
-          "Bronstein Delay Timer",
-          "Multi-Stage Tournament Timer",
-          "Professional Tournament Support",
-          "Mobile Responsive Design",
-          "Audio Feedback",
-          "Gesture Controls",
-          "Game Statistics"
-        ],
-        "screenshot": "https://chessticks.vercel.app/og-image.png",
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.8",
-          "ratingCount": "150",
-          "bestRating": "5",
-          "worstRating": "1"
-        }
-      },
-      {
-        "@type": "SoftwareApplication",
-        "@id": "https://chessticks.vercel.app/#software",
-        "name": "ChessTicks Chess Timer",
-        "applicationCategory": "Game",
-        "applicationSubCategory": "Chess Timer",
-        "operatingSystem": "Web Browser, iOS, Android",
-        "url": "https://chessticks.vercel.app",
-        "downloadUrl": "https://chessticks.vercel.app",
-        "installUrl": "https://chessticks.vercel.app",
-        "softwareVersion": "1.0.0",
-        "fileSize": "2MB",
-        "price": "0",
-        "priceCurrency": "USD",
-        "author": {
-          "@type": "Person",
-          "name": "Utkarsh Tiwari"
-        },
-        "description": "Professional chess timer application supporting all major tournament time controls including Sudden Death, Fischer Increment, Simple Delay, Bronstein Delay, and Multi-Stage formats.",
-        "featureList": [
-          "All 5 Major Tournament Timer Modes",
-          "Professional Tournament Support",
-          "Blitz, Rapid, and Classical Time Controls",
-          "Mobile and Desktop Compatible",
-          "Real-time Game Statistics",
-          "Audio and Visual Feedback",
-          "Gesture-based Controls",
-          "Offline Capability"
-        ],
-        "screenshot": [
-          "https://chessticks.vercel.app/og-image.png",
-          "https://chessticks.vercel.app/screenshot-timer.png"
-        ]
-      },
-      {
-        "@type": "Organization",
-        "@id": "https://chessticks.vercel.app/#organization",
-        "name": "ChessTicks",
-        "url": "https://chessticks.vercel.app",
-        "logo": "https://chessticks.vercel.app/logo.png",
-        "description": "Professional chess timer application for players and tournaments",
-        "foundingDate": "2024",
-        "founder": {
-          "@type": "Person",
-          "name": "Utkarsh Tiwari"
-        },
-        "sameAs": [
-          "https://github.com/UtkarshTheDev/ChessTicks"
-        ]
-      },
-      {
-        "@type": "WebSite",
-        "@id": "https://chessticks.vercel.app/#website",
-        "url": "https://chessticks.vercel.app",
-        "name": "ChessTicks",
-        "description": "Professional chess timer with all tournament modes",
-        "publisher": {
-          "@id": "https://chessticks.vercel.app/#organization"
-        },
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://chessticks.vercel.app/?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
-      }
-    ]
-  };
 
   return (
     <html lang="en">
