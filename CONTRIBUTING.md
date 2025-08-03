@@ -14,7 +14,7 @@ Thank you for your interest in contributing to Chess Timer! We welcome contribut
 1. **Fork and Clone**
    ```bash
    # Fork the repository on GitHub, then clone your fork
-   git clone https://github.com/yourusername/chess-timer.git
+   git clone https://github.com/UtkarshTheDev/chess-timer.git
    cd chess-timer
    ```
 

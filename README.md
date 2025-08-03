@@ -82,7 +82,7 @@ Want to contribute to ChessTicks or run it locally? Here's how to get started:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/chess-timer.git
+   git clone https://github.com/UtkarshTheDev/chess-timer.git
    cd chess-timer
    ```
 
@@ -272,8 +272,8 @@ We welcome contributions from the chess and developer community! Whether you're 
 
 ## 📞 Support & Community
 
-- **🐛 Bug Reports**: [GitHub Issues](https://github.com/yourusername/chess-timer/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/yourusername/chess-timer/discussions)
+- **🐛 Bug Reports**: [GitHub Issues](https://github.com/UtkarshTheDev/chess-timer/issues)
+- **💬 Discussions**: [GitHub Discussions](https://github.com/UtkarshTheDev/chess-timer/discussions)
 - **📧 Contact**: your.email@example.com
 - **🌐 Live App**: [chessticks.vercel.app](https://chessticks.vercel.app)
 

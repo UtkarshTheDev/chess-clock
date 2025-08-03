@@ -24,7 +24,7 @@ const unbounded = Unbounded({
 });
 
 export const metadata: Metadata = {
-  title: "Chess Clock",
+  title: "Chess Timer",
   description: "A Great Clock for Chess Players with Chess Timer and a great UI.",
 };
 

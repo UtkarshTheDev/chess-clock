@@ -156,8 +156,8 @@ export default function Home() {
             className="w-16"
             alt="logo"
           />
-          <h2 className="text-lg font-bold text-white tracking-tighter font-unbounded">
-            Chess Clock
+          <h2 className="text-lg font-bold text-white tracking-tight font-unbounded">
+            Chess Timer
           </h2>
         </div>
 
