@@ -543,7 +543,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     const needsContrastBackground = player === "white";
     
     const gestureHandlers = useGestures({
-      onSingleTap: (event?: Event) => {
+      onSingleTap: (event: React.MouseEvent | React.TouchEvent) => {
         // Check if the click came from an action button
         if (event && event.target) {
           const target = event.target as HTMLElement;
