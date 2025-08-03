@@ -327,9 +327,11 @@ export default function RootLayout({
         <meta httpEquiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
         {/* Additional SEO meta tags */}
-        <meta name="google-site-verification" content="your-google-verification-code" />
         <meta name="msvalidate.01" content="your-bing-verification-code" />
         <meta name="yandex-verification" content="your-yandex-verification-code" />
+
+        {/* Google Site Verification meta tag */}
+        <meta name="google-site-verification" content="x5z731oUt6c6rD5JDeMZ2hdPutuO1V-xKsHbtf0Lr3c" />
       </head>
       <body className={`${ubuntu.variable} ${ubuntuCondensed.variable} ${unbounded.variable} m-0 p-0`}>
         {children}
