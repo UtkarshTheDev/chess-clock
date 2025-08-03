@@ -314,7 +314,6 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
 
 const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
   const { gameSummary } = useStatsStore();
-  const { getDetailedDisplayName } = useTimerTypeStore();
   const [activeTab, setActiveTab] = useState<"overview" | "analysis">("overview");
 
   if (!gameSummary) {
@@ -407,7 +406,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={onExit}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm font-medium"
+            className="flex-1 flex items-center justify-center text-slate-300 gap-2 px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition-colors text-sm font-medium"
           >
             <Home className="w-4 h-4" />
             Exit

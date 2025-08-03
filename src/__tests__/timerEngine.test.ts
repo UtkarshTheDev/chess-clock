@@ -1,5 +1,5 @@
 import { ChessTimerEngine } from '../lib/timerEngine';
-import { ClockConfig, TimerState } from '../types/chess';
+import { ClockConfig } from '../types/chess';
 
 // Mock timers for testing
 jest.useFakeTimers();
@@ -77,8 +77,7 @@ describe('ChessTimerEngine', () => {
 
     test('should not start if already running', () => {
       engine.start('white');
-      const stateBefore = engine.getState();
-      
+
       engine.start('black'); // Should be ignored
       const stateAfter = engine.getState();
       

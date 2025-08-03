@@ -2,13 +2,14 @@ import { TimerModeHandler, TimerState, TimerDisplayInfo } from "@/types/chess";
 
 // Sudden Death Timer Mode
 export class SuddenDeathHandler implements TimerModeHandler {
-  onMoveStart(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onMoveStart(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     return {
       moveStartTime: Date.now(),
     };
   }
 
-  onMoveComplete(player: "white" | "black", moveTime: number, state: TimerState): Partial<TimerState> {
+  onMoveComplete(player: "white" | "black", _moveTime: number, state: TimerState): Partial<TimerState> {
     const moveCount = player === "white" ? state.whiteMoveCount + 1 : state.blackMoveCount + 1;
     
     return {
@@ -17,7 +18,8 @@ export class SuddenDeathHandler implements TimerModeHandler {
     };
   }
 
-  onTick(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onTick(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     // Simple countdown - no special logic needed
     return {};
   }
@@ -39,7 +41,7 @@ export class SimpleDelayHandler implements TimerModeHandler {
     };
   }
 
-  onMoveComplete(player: "white" | "black", moveTime: number, state: TimerState): Partial<TimerState> {
+  onMoveComplete(player: "white" | "black", _moveTime: number, state: TimerState): Partial<TimerState> {
     const moveCount = player === "white" ? state.whiteMoveCount + 1 : state.blackMoveCount + 1;
     
     return {
@@ -77,7 +79,8 @@ export class SimpleDelayHandler implements TimerModeHandler {
 
 // Bronstein Delay Timer Mode
 export class BronsteinDelayHandler implements TimerModeHandler {
-  onMoveStart(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onMoveStart(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     return {
       moveStartTime: Date.now(),
     };
@@ -99,7 +102,8 @@ export class BronsteinDelayHandler implements TimerModeHandler {
     };
   }
 
-  onTick(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onTick(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     // Main time counts down immediately
     return {};
   }
@@ -117,13 +121,14 @@ export class BronsteinDelayHandler implements TimerModeHandler {
 
 // Fischer Increment Timer Mode
 export class FischerIncrementHandler implements TimerModeHandler {
-  onMoveStart(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onMoveStart(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     return {
       moveStartTime: Date.now(),
     };
   }
 
-  onMoveComplete(player: "white" | "black", moveTime: number, state: TimerState): Partial<TimerState> {
+  onMoveComplete(player: "white" | "black", _moveTime: number, state: TimerState): Partial<TimerState> {
     const incMillis = state.config.incMillis || 0;
     const moveCount = player === "white" ? state.whiteMoveCount + 1 : state.blackMoveCount + 1;
     
@@ -138,7 +143,8 @@ export class FischerIncrementHandler implements TimerModeHandler {
     };
   }
 
-  onTick(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onTick(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     // Main time counts down normally
     return {};
   }
@@ -156,13 +162,14 @@ export class FischerIncrementHandler implements TimerModeHandler {
 
 // Multi-Stage Timer Mode (Classical Tournament Controls)
 export class MultiStageHandler implements TimerModeHandler {
-  onMoveStart(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onMoveStart(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     return {
       moveStartTime: Date.now(),
     };
   }
 
-  onMoveComplete(player: "white" | "black", moveTime: number, state: TimerState): Partial<TimerState> {
+  onMoveComplete(player: "white" | "black", _moveTime: number, state: TimerState): Partial<TimerState> {
     const moveCount = player === "white" ? state.whiteMoveCount + 1 : state.blackMoveCount + 1;
     const stageIndex = player === "white" ? state.whiteStageIndex : state.blackStageIndex;
 
@@ -202,7 +209,8 @@ export class MultiStageHandler implements TimerModeHandler {
     return updates;
   }
 
-  onTick(player: "white" | "black", state: TimerState): Partial<TimerState> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  onTick(_player: "white" | "black", _state: TimerState): Partial<TimerState> {
     // Main time counts down normally
     return {};
   }

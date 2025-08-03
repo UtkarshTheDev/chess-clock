@@ -1,11 +1,10 @@
-import { 
-  TIMER_CONFIGS, 
-  getTimerConfig, 
-  createCustomConfig, 
-  formatConfigTime, 
-  getTimerModeDisplayName 
+import {
+  TIMER_CONFIGS,
+  getTimerConfig,
+  createCustomConfig,
+  formatConfigTime,
+  getTimerModeDisplayName
 } from '../lib/timerConfigs';
-import { ClockConfig } from '../types/chess';
 
 describe('Timer Configurations', () => {
   describe('TIMER_CONFIGS', () => {
@@ -227,8 +226,9 @@ describe('Timer Configurations', () => {
     });
 
     test('should handle unknown mode', () => {
-      // @ts-ignore - Testing runtime behavior
-      expect(getTimerModeDisplayName('UNKNOWN_MODE')).toBe('Unknown');
+      // Testing runtime behavior with invalid mode parameter
+      type InvalidMode = 'UNKNOWN_MODE';
+      expect(getTimerModeDisplayName('UNKNOWN_MODE' as InvalidMode as Parameters<typeof getTimerModeDisplayName>[0])).toBe('Unknown');
     });
   });
 
@@ -247,7 +247,7 @@ describe('Timer Configurations', () => {
         }
         
         if (config.stages) {
-          config.stages.forEach(stage => {
+          config.stages.forEach((stage: { afterMoves: number; addMillis: number; incMillis?: number }) => {
             expect(stage.afterMoves).toBeGreaterThan(0);
             expect(stage.addMillis).toBeGreaterThan(0);
             if (stage.incMillis !== undefined) {

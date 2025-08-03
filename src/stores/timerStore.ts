@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { ClockConfig, TimerState as EngineTimerState, TimerDisplayInfo } from "@/types/chess";
 import { ChessTimerEngine } from "@/lib/timerEngine";
-import { TIMER_CONFIGS } from "@/lib/timerConfigs";
 
 interface TimerStoreState {
   // Engine state
@@ -216,14 +215,17 @@ export const useTimerStore = create<TimerStoreState>((set, get) => {
     },
 
     // Legacy compatibility methods (no-op)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setTimerType: (_type: "normal" | "fischer" | "bronstein") => {
       // Legacy method - configuration is now handled via initializeTimer
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setIncrement: (_seconds: number) => {
       // Legacy method - configuration is now handled via initializeTimer
     },
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setBronsteinDelay: (_seconds: number) => {
       // Legacy method - configuration is now handled via initializeTimer
     },

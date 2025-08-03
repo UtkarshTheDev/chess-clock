@@ -167,14 +167,12 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     blackTimeRemaining,
     isRunning,
     activePlayer,
-    initializeTime,
     switchActivePlayer,
     pauseTimer,
     resumeTimer,
     initialTime,
     whiteDisplayInfo,
-    blackDisplayInfo,
-    startTimer,
+    blackDisplayInfo
   } = useTimerStore();
 
   const { getDetailedDisplayName } = useTimerTypeStore();
@@ -252,7 +250,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     const store = useTimerStore.getState();
 
     // Set timeout callback
-    store.setTimeoutCallback((_player: "white" | "black") => {
+    store.setTimeoutCallback(() => {
       handleGameEnd("timeout");
     });
   }, [handleGameEnd]);
@@ -597,17 +595,32 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           {displayInfo && (displayInfo.delayTime !== undefined || displayInfo.pendingIncrement !== undefined || displayInfo.stageInfo) && (
             <div className="mb-2 text-center">
               {displayInfo.isInDelay && displayInfo.delayTime !== undefined && (
-                <div className="text-sm font-medium text-yellow-300 bg-yellow-900/30 px-2 py-1 rounded">
+                <div className={cn(
+                  "text-sm font-semibold px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border",
+                  player === "white"
+                    ? "text-yellow-800 bg-yellow-100/95 border-yellow-300"
+                    : "text-yellow-200 bg-yellow-900/90 border-yellow-600"
+                )}>
                   Delay: {Math.ceil(displayInfo.delayTime)}s
                 </div>
               )}
               {displayInfo.pendingIncrement !== undefined && displayInfo.pendingIncrement > 0 && (
-                <div className="text-sm font-medium text-green-300 bg-green-900/30 px-2 py-1 rounded mt-1">
+                <div className={cn(
+                  "text-sm font-semibold px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border mt-1",
+                  player === "white"
+                    ? "text-green-800 bg-green-100/95 border-green-300"
+                    : "text-green-200 bg-green-900/90 border-green-600"
+                )}>
                   +{displayInfo.pendingIncrement}s after move
                 </div>
               )}
               {displayInfo.stageInfo && (
-                <div className="text-xs font-medium text-blue-300 bg-blue-900/30 px-2 py-1 rounded mt-1">
+                <div className={cn(
+                  "text-xs font-semibold px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border mt-1",
+                  player === "white"
+                    ? "text-blue-800 bg-blue-100/95 border-blue-300"
+                    : "text-blue-200 bg-blue-900/90 border-blue-600"
+                )}>
                   {displayInfo.stageInfo}
                 </div>
               )}
@@ -728,8 +741,8 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             </div>
 
             {/* Timer Type Display */}
-            <div className="px-3 py-1 rounded-full bg-neutral-800/80 backdrop-blur-sm">
-              <span className="text-neutral-300 text-xs font-medium">
+            <div className="px-3 py-1 rounded-full bg-neutral-900/90 backdrop-blur-sm border border-neutral-700/50 shadow-lg">
+              <span className="text-neutral-100 text-xs font-semibold">
                 {getDetailedDisplayName()}
               </span>
             </div>

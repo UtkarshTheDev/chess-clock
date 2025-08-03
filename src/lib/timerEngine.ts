@@ -1,9 +1,9 @@
-import { TimerState, ClockConfig, TimerDisplayInfo } from "@/types/chess";
+import { TimerState, ClockConfig, TimerDisplayInfo, TimerModeHandler } from "@/types/chess";
 import { createTimerModeHandler } from "./timerModes";
 
 export class ChessTimerEngine {
   private state: TimerState;
-  private handler: any;
+  private handler: TimerModeHandler;
   private tickInterval: NodeJS.Timeout | null = null;
   private onStateChange?: (state: TimerState) => void;
   private onTimeout?: (player: "white" | "black") => void;
@@ -73,10 +73,10 @@ export class ChessTimerEngine {
 
     const currentPlayer = this.state.activePlayer;
     const nextPlayer = currentPlayer === "white" ? "black" : "white";
-    
+
     // Complete the current player's move
     this.completeMove(currentPlayer);
-    
+
     // Switch to next player and start their move
     this.updateState({ activePlayer: nextPlayer });
     this.startMove(nextPlayer);

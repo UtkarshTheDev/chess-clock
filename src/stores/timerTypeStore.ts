@@ -102,7 +102,7 @@ export const useTimerTypeStore = create<TimerTypeState>((set, get) => ({
 
   setIncrement: (seconds: number) => {
     const state = get();
-    let newConfig = { ...state.config };
+    const newConfig = { ...state.config };
 
     if (state.config.mode === 'FISCHER_INCREMENT') {
       newConfig.incMillis = seconds * 1000;
