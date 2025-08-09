@@ -37,17 +37,23 @@ export const ActionButton = ({
       disabled={disabled}
       data-action-button={variant}
       className={cn(
-        "px-4 py-2.5 rounded-xl",
+        // Bigger, more tappable targets on mobile
+        "px-4 py-3 sm:py-2.5 rounded-xl",
         "border-2 transition-all duration-300",
         "flex items-center gap-2.5",
-        "font-semibold text-sm",
+        // Scale text up a bit on mobile for readability
+        "font-semibold text-base sm:text-sm",
         "backdrop-blur-md relative overflow-hidden",
         "transform hover:-translate-y-1 active:translate-y-0",
         disabled ? variants[variant].disabled : variants[variant].base,
         // Enhanced styling for better visibility on white backgrounds
         "ring-1 ring-black/10",
         // Additional disabled state styling for better visual feedback
-        disabled && "opacity-60 cursor-not-allowed hover:translate-y-0"
+        disabled && "opacity-60 cursor-not-allowed hover:translate-y-0",
+        // Ensure comfortable minimum width for labels on small screens
+        "min-w-[6.5rem] sm:min-w-0",
+        // Improve touch handling on mobile
+        "touch-manipulation"
       )}
       whileHover={{
         scale: disabled ? 1 : 1.05,

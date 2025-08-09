@@ -636,9 +636,15 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         {/* Action Buttons */}
         <motion.div
           className={cn(
-            "absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 action-button-container",
+            // Mobile-first: keep actions in a single row for muscle memory and speed
+            "absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex flex-nowrap gap-2 sm:gap-3 z-20 action-button-container",
+            "px-2 sm:px-0",
+            // Horizontal scroll on very small screens instead of wrapping
+            "overflow-x-auto no-scrollbar",
             // Enhanced contrast background for better visibility on white timer squares
-            needsContrastBackground && "p-3 rounded-2xl bg-black/20 backdrop-blur-xl border border-black/10 shadow-2xl"
+            needsContrastBackground && "p-2 sm:p-3 rounded-2xl bg-black/25 sm:bg-black/20 backdrop-blur-xl border border-black/10 shadow-2xl",
+            // Improve touch accuracy
+            "[&>*]:touch-manipulation"
           )}
           initial={false}
           data-action-button-container="true"
@@ -656,7 +662,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               }
             }}
             disabled={!isActive || !isRunning}
-            icon={<Check className="w-5 h-5" />}
+            icon={<Check className="w-6 h-6 sm:w-5 sm:h-5" />}
             label="Check"
           />
           <ActionButton
@@ -673,7 +679,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               }
             }}
             disabled={!isActive || !isRunning}
-            icon={<Trophy className="w-5 h-5" />}
+            icon={<Trophy className="w-6 h-6 sm:w-5 sm:h-5" />}
             label="Checkmate"
           />
           <ActionButton
@@ -690,7 +696,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               }
             }}
             disabled={!isActive || !isRunning}
-            icon={<Handshake className="w-5 h-5" />}
+            icon={<Handshake className="w-6 h-6 sm:w-5 sm:h-5" />}
             label="Draw"
           />
         </motion.div>

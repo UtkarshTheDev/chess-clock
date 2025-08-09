@@ -32,6 +32,8 @@ ChartJS.register(
   Legend,
   ArcElement
 );
+// Reduce chart animation for better mobile perf
+ChartJS.defaults.animation = false;
 
 // Custom styles for the game summary dialog
 const customStyles = `
@@ -296,7 +298,7 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
   return (
     <div className="space-y-6">
       {/* Primary Stats */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
         <StatCard
           label="Total Time"
           value={`${stats.totalTimeUsed.toFixed(1)}s`}
@@ -331,8 +333,8 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
 
       {/* Performance Metrics */}
       <div>
-        <h4 className="text-lg font-semibold text-white mb-4">Performance Metrics</h4>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <h4 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Performance Metrics</h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <StatCard
             label="Time Pressure"
             value={timePressureMoves.toString()}
@@ -353,7 +355,7 @@ const OverviewStats = ({ stats }: { stats: PlayerStats }) => {
 
       {/* Phase Breakdown */}
       <div>
-        <h4 className="text-lg font-semibold text-white mb-4">Phase Breakdown</h4>
+        <h4 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Phase Breakdown</h4>
         <PhaseStats stats={stats} />
       </div>
     </div>
@@ -426,13 +428,13 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
   const blackQuickMovesPercentage = blackTotalMoves > 0 ? (blackStats.quickMoves / blackTotalMoves) * 100 : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-white mb-2">Player Comparison</h3>
         <p className="text-sm text-neutral-400">Side-by-side performance analysis</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <ComparisonCard
           label="Total Time Used"
           whiteValue={whiteStats.totalTimeUsed}
@@ -478,8 +480,8 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
       </div>
 
       {/* Phase Comparison Chart */}
-      <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
-        <h4 className="text-lg font-semibold text-white mb-4 text-center">Phase-Based Time Distribution</h4>
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-3 sm:p-6 rounded-lg border border-white/5">
+        <h4 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 text-center">Phase-Based Time Distribution</h4>
         <Bar
           data={{
             labels: ['Opening', 'Middlegame', 'Endgame'],
@@ -492,6 +494,7 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
                   whiteStats.phaseStats.endgame.totalTime,
                 ],
                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                maxBarThickness: 20,
               },
               {
                 label: 'Black',
@@ -501,11 +504,14 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
                   blackStats.phaseStats.endgame.totalTime,
                 ],
                 backgroundColor: 'rgba(156, 163, 175, 0.8)',
+                maxBarThickness: 20,
               },
             ],
           }}
           options={{
             responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
             plugins: {
               legend: {
                 position: 'top' as const,
@@ -518,6 +524,9 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
               x: {
                 ticks: {
                   color: 'rgb(156, 163, 175)',
+                  maxRotation: 0,
+                  autoSkip: true,
+                  maxTicksLimit: 3,
                 },
                 grid: {
                   color: 'rgba(156, 163, 175, 0.1)',
@@ -526,6 +535,7 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
               y: {
                 ticks: {
                   color: 'rgb(156, 163, 175)',
+                  maxTicksLimit: 5,
                 },
                 grid: {
                   color: 'rgba(156, 163, 175, 0.1)',
@@ -533,6 +543,7 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
               },
             },
           }}
+          height={220}
         />
       </div>
     </div>
@@ -580,11 +591,13 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
         label: 'White Move Time',
         data: whiteMoveTimeData,
         backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        maxBarThickness: 20,
       },
       {
         label: 'Black Move Time',
         data: blackMoveTimeData,
         backgroundColor: 'rgba(156, 163, 175, 0.8)',
+        maxBarThickness: 20,
       },
     ],
   };
@@ -601,6 +614,7 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
           whiteStats.phaseStats.endgame.totalTime,
         ],
         backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(59, 130, 246, 0.6)', 'rgba(59, 130, 246, 0.4)'],
+        maxBarThickness: 20,
       },
       {
         label: 'Black',
@@ -610,12 +624,15 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
           blackStats.phaseStats.endgame.totalTime,
         ],
         backgroundColor: ['rgba(156, 163, 175, 0.8)', 'rgba(156, 163, 175, 0.6)', 'rgba(156, 163, 175, 0.4)'],
+        maxBarThickness: 20,
       },
     ],
   };
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
+    animation: false,
     plugins: {
       legend: {
         position: 'top' as const,
@@ -634,6 +651,8 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
       x: {
         ticks: {
           color: 'rgb(156, 163, 175)',
+          maxRotation: 0,
+          autoSkip: true,
         },
         grid: {
           color: 'rgba(156, 163, 175, 0.1)',
@@ -642,6 +661,7 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
       y: {
         ticks: {
           color: 'rgb(156, 163, 175)',
+          maxTicksLimit: 5,
         },
         grid: {
           color: 'rgba(156, 163, 175, 0.1)',
@@ -662,7 +682,7 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
       </div>
 
       {/* Chart Type Selector */}
-      <div className="flex justify-center gap-2">
+      <div className="flex justify-center gap-2 overflow-x-auto no-scrollbar px-2">
         <button
           onClick={() => setChartType('timeRemaining')}
           className={cn(
@@ -699,20 +719,20 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
       </div>
 
       {/* Chart Display */}
-      <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-3 sm:p-6 rounded-lg border border-white/5 min-h-[220px]">
         {chartType === 'timeRemaining' && (
-          <Line data={timeRemainingData} options={chartOptions} />
+          <Line data={timeRemainingData} options={chartOptions} height={220} />
         )}
         {chartType === 'moveTime' && (
-          <Bar data={moveTimeData} options={chartOptions} />
+          <Bar data={moveTimeData} options={chartOptions} height={220} />
         )}
         {chartType === 'phaseAnalysis' && (
-          <Bar data={phaseData} options={chartOptions} />
+          <Bar data={phaseData} options={chartOptions} height={220} />
         )}
       </div>
 
       {/* Timer-Mode-Specific Quick Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           label="Avg White Move"
           value={`${whiteStats.averageTimePerMove.toFixed(1)}s`}
@@ -954,7 +974,7 @@ const PerformanceInsights = ({ whiteStats, blackStats }: { whiteStats: PlayerSta
   const insights = getTimerSpecificInsights();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="text-center">
         <h3 className="text-lg font-semibold text-white mb-2">Performance Insights</h3>
         <p className="text-sm text-neutral-400">
@@ -1118,7 +1138,7 @@ const EnhancedMoveHistory = ({ whiteStats, blackStats }: { whiteStats: PlayerSta
       </div>
 
       {/* Filter Controls */}
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-2 px-2">
         {[
           { key: 'all', label: 'All Moves', count: allMoves.length },
           { key: 'white', label: 'White', count: whiteStats.moveHistory.length },
@@ -1142,7 +1162,7 @@ const EnhancedMoveHistory = ({ whiteStats, blackStats }: { whiteStats: PlayerSta
       </div>
 
       {/* Move List */}
-      <div className="space-y-3 max-h-96 overflow-y-auto">
+      <div className="space-y-3 max-h-[60vh] sm:max-h-96 overflow-y-auto">
         {filteredMoves.length > 0 ? (
           filteredMoves.map((move) => (
             <EnhancedMoveItem
@@ -1158,7 +1178,7 @@ const EnhancedMoveHistory = ({ whiteStats, blackStats }: { whiteStats: PlayerSta
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-white/10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 pt-4 border-t border-white/10">
         <StatCard
           label="Total Moves"
           value={allMoves.length.toString()}
@@ -1217,20 +1237,20 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm"
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
+        initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-5xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[95vh] overflow-hidden flex flex-col game-summary-dialog"
+        className="w-full max-w-5xl bg-neutral-900 rounded-xl sm:rounded-2xl shadow-xl border border-white/10 max-h-[96vh] overflow-hidden flex flex-col game-summary-dialog"
       >
         <WinnerBanner
           winner={winner}
           reason={endReason}
         />
 
-        <div className="flex justify-center px-6 py-2 border-b border-white/5">
-          <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm">
+        <div className="flex justify-center px-2 sm:px-6 py-2 border-b border-white/5">
+          <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm overflow-x-auto no-scrollbar max-w-full">
           <button
             onClick={() => setActiveTab("overview")}
             className={cn(
@@ -1294,8 +1314,8 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
-          <div className="space-y-8 max-w-full overflow-hidden min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 custom-scrollbar">
+          <div className="space-y-6 sm:space-y-8 max-w-full overflow-hidden min-h-0">
             {activeTab === "overview" && (
               <OverviewStats
                 stats={
@@ -1347,7 +1367,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
           {/* Content container */}
-          <div className="relative p-4 flex gap-3 flex-wrap sm:flex-nowrap">
+          <div className="relative p-3 sm:p-4 flex gap-2 sm:gap-3 flex-wrap">
             {/* Exit Button */}
             <motion.button
               whileHover={{
@@ -1356,7 +1376,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
               }}
               whileTap={{ scale: 0.98 }}
               onClick={onExit}
-              className="group flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-neutral-700 to-neutral-600 hover:from-neutral-600 hover:to-neutral-500 transition-all duration-300 text-white font-medium shadow-lg border border-white/10 backdrop-blur-sm"
+              className="group flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl bg-gradient-to-r from-neutral-700 to-neutral-600 hover:from-neutral-600 hover:to-neutral-500 transition-all duration-300 text-white font-medium shadow-lg border border-white/10 backdrop-blur-sm"
             >
               <motion.div
                 whileHover={{ rotate: -10 }}
@@ -1377,7 +1397,7 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
               }}
               whileTap={{ scale: 0.98 }}
               onClick={onNewGame}
-              className="group flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-400 hover:to-blue-500 transition-all duration-300 text-white font-medium shadow-lg shadow-blue-500/25 border border-blue-400/20 backdrop-blur-sm relative overflow-hidden"
+              className="group flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 hover:from-blue-500 hover:via-blue-400 hover:to-blue-500 transition-all duration-300 text-white font-medium shadow-lg shadow-blue-500/25 border border-blue-400/20 backdrop-blur-sm relative overflow-hidden"
             >
               {/* Animated background shimmer */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />

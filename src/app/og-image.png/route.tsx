@@ -4,19 +4,7 @@ export const runtime = 'edge'
 
 export async function GET() {
   try {
-    // Fetch the actual ChessTicks logo
-    let logoData: string | null = null
-    try {
-      const logoResponse = await fetch('https://chessticks.vercel.app/logo.png')
-      if (logoResponse.ok) {
-        const logoBuffer = await logoResponse.arrayBuffer()
-        logoData = `data:image/png;base64,${Buffer.from(logoBuffer).toString('base64')}`
-      }
-    } catch (logoError) {
-      console.log('Failed to fetch logo, using fallback:', logoError)
-    }
-
-    return new ImageResponse(
+    const imageResponse = new ImageResponse(
       (
         <div
           style={{
@@ -64,7 +52,7 @@ export async function GET() {
                 marginBottom: '50px',
               }}
             >
-              {/* Logo */}
+              {/* Logo (static for stability) */}
               <div
                 style={{
                   display: 'flex',
@@ -72,33 +60,21 @@ export async function GET() {
                   justifyContent: 'center',
                   width: '80px',
                   height: '80px',
-                  backgroundColor: logoData ? 'transparent' : '#22c55e',
+                  backgroundColor: '#22c55e',
                   borderRadius: '16px',
                   marginBottom: '20px',
-                  boxShadow: logoData ? 'none' : '0 8px 32px rgba(34, 197, 94, 0.3)',
+                  boxShadow: '0 8px 32px rgba(34, 197, 94, 0.3)',
                   overflow: 'hidden',
                 }}
               >
-                {logoData ? (
-                  <img
-                    src={logoData}
-                    alt="ChessTicks Logo"
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      objectFit: 'contain',
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      fontSize: '40px',
-                      color: 'white',
-                    }}
-                  >
-                    ⏱️
-                  </div>
-                )}
+                <div
+                  style={{
+                    fontSize: '40px',
+                    color: 'white',
+                  }}
+                >
+                  ⏱️
+                </div>
               </div>
 
               {/* App Title */}
@@ -249,12 +225,29 @@ export async function GET() {
       {
         width: 1200,
         height: 630,
+        headers: {
+          'Cache-Control': 'public, max-age=31536000, immutable',
+        },
       }
     )
+    
+    return imageResponse
   } catch (error) {
-    console.log('Failed to generate image:', error)
-    return new Response(`Failed to generate the image`, {
-      status: 500,
-    })
+    console.error('Failed to generate image:', error)
+    
+    // Return a simple fallback response instead of trying to generate an image
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to generate image',
+        message: 'Please try again later'
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+      }
+    )
   }
 }
