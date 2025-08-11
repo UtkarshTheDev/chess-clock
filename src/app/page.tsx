@@ -19,6 +19,11 @@ import { useTimerTypeStore, TimerMode } from "@/stores/timerTypeStore";
 import { ChessTimer } from "@/components/ChessTimer";
 import { useStatsStore } from "@/stores/statsStore";
 import { createCustomConfig } from "@/lib/timerConfigs";
+import GlareHover from "../Animations/GlareHover/GlareHover";
+import Noise from "../Animations/Noise/Noise";
+
+
+import ShinyText from "../TextAnimations/ShinyText/ShinyText";
 
 type GameState = "home" | "playing";
 
@@ -148,6 +153,13 @@ export default function Home() {
 
     return (
       <>
+        <Noise
+    patternSize={1024}
+    patternScaleX={1}
+    patternScaleY={1}
+    patternRefreshInterval={5}
+    patternAlpha={10}
+  />
         <div className="mt-0 space-y-2 flex flex-col items-center justify-center">
           <Image
             src={"/logo.png"}
@@ -157,9 +169,8 @@ export default function Home() {
             alt="ChessTicks - Professional Chess Timer and Tournament Clock Logo"
             priority
           />
-          <h1 className="text-lg font-bold text-white tracking-normal font-unbounded">
-            Chess Ticks
-          </h1>
+          {/* Shiny brand title */}
+            <ShinyText text="Chess Ticks" disabled={false} speed={3} className='text-lg font-bold text-white tracking-normal font-unbounded' />
         </div>
 
         <div className="mt-4 flex justify-center items-center w-full flex-col space-y-6">
@@ -234,12 +245,28 @@ export default function Home() {
 
         {/* Start Button */}
         <div className="flex justify-center items-center w-full fixed bottom-4 left-0 right-0 px-8">
-          <Button
-            className="w-full mb-4 font-unbounded text-xl font-bold text-white bg-green-500 border border-neutral-300  hover:border-white hover:bg-green-600 transition-all duration-300 rounded-lg flex items-center justify-center py-6 "
-            onClick={startGame}
-          >
-            <PlayIcon width={24} height={24} /> Start Now
-          </Button>
+          <div className="relative w-full">
+            <Button
+              className="group relative w-full mb-4 font-unbounded text-xl font-bold text-white bg-green-500 border border-neutral-300 hover:border-white hover:bg-green-600 transition-all duration-300 rounded-lg flex items-center justify-center py-6 overflow-hidden"
+              onClick={startGame}
+            >
+              {/* Non-interactive glare overlay inside the button */}
+              <div className="absolute inset-0 pointer-events-none">
+                <GlareHover
+                  width="100%"
+                  height="100%"
+                  glareColor="#ffffff"
+                  glareOpacity={0.15}
+                  glareAngle={-30}
+                  glareSize={300}
+                  transitionDuration={800}
+                  className="!border-transparent !bg-transparent"
+                  style={{ pointerEvents: "none" }}
+                />
+              </div>
+              <PlayIcon width={24} height={24} /> Start Now
+            </Button>
+          </div>
         </div>
       </>
     );

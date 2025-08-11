@@ -46,34 +46,19 @@ const AnimatedItem: React.FC<AnimatedItemProps> = ({
 };
 
 interface AnimatedListProps {
-  items?: string[];
-  onItemSelect?: (item: string, index: number) => void;
+  items?: ReactNode[];
+  onItemSelect?: (index: number) => void;
   showGradients?: boolean;
   enableArrowNavigation?: boolean;
   className?: string;
   itemClassName?: string;
   displayScrollbar?: boolean;
   initialSelectedIndex?: number;
+  wrapItems?: boolean; // if true, apply padding/background wrapper around each item
 }
 
 const AnimatedList: React.FC<AnimatedListProps> = ({
-  items = [
-    "Item 1",
-    "Item 2",
-    "Item 3",
-    "Item 4",
-    "Item 5",
-    "Item 6",
-    "Item 7",
-    "Item 8",
-    "Item 9",
-    "Item 10",
-    "Item 11",
-    "Item 12",
-    "Item 13",
-    "Item 14",
-    "Item 15",
-  ],
+  items = [],
   onItemSelect,
   showGradients = true,
   enableArrowNavigation = true,
@@ -81,6 +66,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
   itemClassName = "",
   displayScrollbar = true,
   initialSelectedIndex = -1,
+  wrapItems = false,
 }) => {
   const listRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] =
@@ -114,7 +100,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
         if (selectedIndex >= 0 && selectedIndex < items.length) {
           e.preventDefault();
           if (onItemSelect) {
-            onItemSelect(items[selectedIndex], selectedIndex);
+            onItemSelect(selectedIndex);
           }
         }
       }
@@ -155,35 +141,33 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
     <div className={`relative w-[500px] ${className}`}>
       <div
         ref={listRef}
-        className={`max-h-[400px] overflow-y-auto p-4 ${
-          displayScrollbar
-            ? "[&::-webkit-scrollbar]:w-[8px] [&::-webkit-scrollbar-track]:bg-[#060010] [&::-webkit-scrollbar-thumb]:bg-[#222] [&::-webkit-scrollbar-thumb]:rounded-[4px]"
-            : "scrollbar-hide"
-        }`}
+        className={`max-h-[400px] ${displayScrollbar ? 'overflow-y-auto' : 'overflow-visible'} p-4`}
         onScroll={handleScroll}
-        style={{
-          scrollbarWidth: displayScrollbar ? "thin" : "none",
+        style={displayScrollbar ? {
+          scrollbarWidth: "thin",
           scrollbarColor: "#222 #060010",
-        }}
+        } : undefined}
       >
         {items.map((item, index) => (
           <AnimatedItem
             key={index}
-            delay={0.1}
+            delay={0.06 * index}
             index={index}
             onMouseEnter={() => setSelectedIndex(index)}
             onClick={() => {
               setSelectedIndex(index);
               if (onItemSelect) {
-                onItemSelect(item, index);
+                onItemSelect(index);
               }
             }}
           >
-            <div
-              className={`p-4 bg-[#111] rounded-lg ${selectedIndex === index ? "bg-[#222]" : ""} ${itemClassName}`}
-            >
-              <p className="text-white m-0">{item}</p>
-            </div>
+            {wrapItems ? (
+              <div className={`p-4 bg-[#111] rounded-lg ${selectedIndex === index ? "bg-[#222]" : ""} ${itemClassName}`}>
+                {item}
+              </div>
+            ) : (
+              <>{item}</>
+            )}
           </AnimatedItem>
         ))}
       </div>

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import GlareHover from "@/Animations/GlareHover/GlareHover";
 
 interface ActionButtonProps {
   variant: "check" | "checkmate" | "draw";
@@ -60,9 +61,23 @@ export const ActionButton = ({
       whileTap={{ scale: disabled ? 1 : 0.95 }}
       initial={false}
     >
-      {/* Subtle shine effect for premium feel */}
+      {/* Glare overlay (non-interactive) for premium feel */}
       {!disabled && (
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+        <div className="absolute inset-0 pointer-events-none">
+          <GlareHover
+            width="100%"
+            height="100%"
+            background="transparent"
+            borderColor="transparent"
+            glareColor="#ffffff"
+            glareOpacity={0.18}
+            glareAngle={-25}
+            glareSize={220}
+            transitionDuration={700}
+            className="!border-transparent !bg-transparent"
+            style={{ pointerEvents: "none" }}
+          />
+        </div>
       )}
 
       <motion.span

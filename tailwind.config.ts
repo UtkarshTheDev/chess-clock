@@ -74,6 +74,15 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      keyframes: {
+        shine: {
+          '0%': { backgroundPosition: '100%' },
+          '100%': { backgroundPosition: '-100%' },
+        },
+      },
+      animation: {
+        shine: 'shine 5s linear infinite',
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

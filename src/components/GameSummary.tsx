@@ -19,7 +19,12 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
+import AnimatedList from "./AnimatedList/AnimatedList";
+
 import type { ChartOptions } from 'chart.js';
+import ShinyText from "../TextAnimations/ShinyText/ShinyText";
+
+
 
 // Register Chart.js components
 ChartJS.register(
@@ -33,6 +38,20 @@ ChartJS.register(
   Legend,
   ArcElement
 );
+
+
+
+function ShinyWinnerText({ winner }: { winner: string }) {
+  const text = winner === "draw" ? "Game Drawn" : `${winner.charAt(0).toUpperCase() + winner.slice(1)} Wins!`;
+  return (
+    <ShinyText
+      text={text}
+      disabled={false}
+      speed={7}
+      className="text-4xl"
+    />
+  );
+}
 
 // Custom styles for the game summary dialog
 const customStyles = `
@@ -170,12 +189,12 @@ const WinnerBanner = ({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
           className={cn(
-            "text-4xl font-bold mb-2 tracking-wide font-unbounded",
+            "mb-2 tracking-wide font-unbounded",
             colors.textColor,
             "drop-shadow-lg"
           )}
         >
-          {winner === "draw" ? "Game Drawn" : `${winner.charAt(0).toUpperCase() + winner.slice(1)} Wins!`}
+          <ShinyWinnerText winner={winner} />
         </motion.h1>
 
         <motion.div
@@ -200,6 +219,29 @@ const WinnerBanner = ({
     </motion.div>
   );
 };
+import CountUp from "../TextAnimations/CountUp/CountUp";
+
+function StatValue({ value }: { value: string }) {
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Extract a leading numeric value (supports + or - and decimals), optionally followed by a 's' suffix
+  const match = value.match(/^([+\-]?(?:\d+)?(?:\.\d+)?)(.*)$/);
+  const numericPart = match && match[1] ? match[1] : null;
+  const suffix = match && match[2] ? match[2] : '';
+
+  const num = numericPart !== null && numericPart !== '' && !isNaN(Number(numericPart)) ? Number(numericPart) : null;
+
+  if (num === null || prefersReducedMotion) {
+    return <p className="text-lg font-semibold text-white">{value}</p>;
+  }
+
+  return (
+    <p className="text-lg font-semibold text-white tabular-nums">
+      <CountUp to={num} from={0} delay={0.2} duration={0.25} />{suffix}
+    </p>
+  );
+}
+
+
 
 const StatCard = ({
   label,
@@ -219,13 +261,13 @@ const StatCard = ({
       <Tooltip text={tooltip}>
         <div className="space-y-1 cursor-help">
           <p className="text-sm text-neutral-400 truncate">{label}</p>
-          <p className="text-lg font-semibold text-white">{value}</p>
+          <StatValue value={value} />
         </div>
       </Tooltip>
     ) : (
       <div className="space-y-1">
         <p className="text-sm text-neutral-400 truncate">{label}</p>
-        <p className="text-lg font-semibold text-white">{value}</p>
+        <StatValue value={value} />
       </div>
     )}
   </motion.div>
@@ -1142,7 +1184,7 @@ const EnhancedMoveHistory = ({ whiteStats, blackStats }: { whiteStats: PlayerSta
             {indicators.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-1 justify-end">
                 {indicators.map((indicator, idx) => (
-                  <span key={idx} className="text-xs bg-neutral-700 px-2 py-1 rounded">
+                  <span key={idx} className="text-xs bg-neutral-700 text-neutral-200 px-2 py-1 rounded">
                     {indicator}
                   </span>
                 ))}
@@ -1188,12 +1230,36 @@ const EnhancedMoveHistory = ({ whiteStats, blackStats }: { whiteStats: PlayerSta
       {/* Move List */}
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {filteredMoves.length > 0 ? (
-          filteredMoves.map((move) => (
-            <EnhancedMoveItem
-              key={`${move.by}-${move.moveNumber}`}
-              move={move}
-            />
-          ))
+          (() => {
+            const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (prefersReducedMotion) {
+              return (
+                <>
+                  {filteredMoves.map((move) => (
+                    <EnhancedMoveItem
+                      key={`${move.by}-${move.moveNumber}`}
+                      move={move}
+                    />
+                  ))}
+                </>
+              );
+            }
+            // Build JSX items preserving EnhancedMoveItem visuals
+            const items = filteredMoves.map((move) => (
+              <EnhancedMoveItem key={`${move.by}-${move.moveNumber}`} move={move} />
+            ));
+            return (
+              <AnimatedList
+                items={items}
+                showGradients={false}
+                enableArrowNavigation={false}
+                className="w-full"
+                itemClassName="bg-neutral-800/50 border border-white/10 hover:bg-neutral-800/70"
+                displayScrollbar={false}
+                wrapItems={false}
+              />
+            );
+          })()
         ) : (
           <div className="text-center py-8 text-neutral-400">
             No moves match the selected filter.
@@ -1439,9 +1505,9 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
             </motion.button>
           </div>
         </motion.div>
-                  </motion.div>
-                </motion.div>
-              );
-            };
+      </motion.div>
+    </motion.div>
+  );
+};
 
-            export default GameSummary;
+export default GameSummary;
