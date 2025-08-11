@@ -542,27 +542,57 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     // Apply to white background cards, whether active or not
     const needsContrastBackground = player === "white";
     
-    const gestureHandlers = useGestures({
-      onSingleTap: (event: React.MouseEvent | React.TouchEvent) => {
-        // Check if the click came from an action button
-        if (event && event.target) {
-          const target = event.target as HTMLElement;
-          const isActionButton = target.closest('[data-action-button]') || target.closest('.action-button-container');
-          if (isActionButton) {
-            return;
-          }
-        }
-        handleSingleTap(player);
-      },
-      onTwoFingerTap: () => handleTwoFingerTap(player),
-      onLongPress: () => handleLongPress(player),
-      onGestureStart: () => {
-        if (isActive && isRunning) {
-          setIsGestureActive(true);
-        }
-      },
-      onGestureEnd: () => setIsGestureActive(false),
-    });
+    // Add these state variables outside the useGestures hook
+    const [lastTapTime, setLastTapTime] = useState(0);
+    const [tapCount, setTapCount] = useState(0);
+    
+const gestureHandlers = useGestures({
+  onSingleTap: (event: React.MouseEvent | React.TouchEvent) => {
+    if (!event?.target) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    const isActionButton = 
+      target.closest('[data-action-button]') || 
+      target.closest('.action-button-container');
+
+    if (isActionButton) {
+      return;
+    }
+
+    const now = Date.now();
+    if (now - lastTapTime < 500) {
+      setTapCount((prev) => prev + 1);
+      if (tapCount > 2) {
+        vibrate([10, 20, 10]);
+      }
+    } else {
+      setTapCount(1);
+    }
+    
+    setLastTapTime(now);
+    handleSingleTap(player);
+  },
+
+  onTwoFingerTap: () => {
+    handleTwoFingerTap(player);
+  },
+
+  onLongPress: () => {
+    handleLongPress(player);
+  },
+
+  onGestureStart: () => {
+    if (isActive && isRunning) {
+      setIsGestureActive(true);
+    }
+  },
+
+  onGestureEnd: () => {
+    setIsGestureActive(false);
+  }
+});
 
     return (
       <motion.div
@@ -574,11 +604,11 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           // Use the dynamic background function
           getBackground(),
           // Scale up active card and increase z-index to avoid border overlap
-          isActive && "scale-105 z-10",
+          isActive && "scale-[1.03] sm:scale-105 z-10", // Reduced scale on mobile
           // Add gesture feedback
-          isGestureActive && isActive && "scale-110 shadow-2xl",
+          isGestureActive && isActive && "scale-[1.05] sm:scale-110 shadow-2xl", // Reduced scale on mobile
           // Border: use dynamic border color logic
-          isActive ? "border-4" : "border-2",
+          isActive ? "border-[3px] sm:border-4" : "border-[1px] sm:border-2", // Thinner border on mobile
           getBorderColor(),
           // Add subtle ring effect for better visibility
           isActive ? (player === "black" ? "ring-1 ring-gray-300/30" : "") : "",
@@ -593,10 +623,10 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         <div className="flex flex-col items-center justify-center h-full">
           {/* Timer Mode Info */}
           {displayInfo && (displayInfo.delayTime !== undefined || displayInfo.pendingIncrement !== undefined || displayInfo.stageInfo) && (
-            <div className="mb-2 text-center">
+            <div className="mb-1 sm:mb-2 text-center">
               {displayInfo.isInDelay && displayInfo.delayTime !== undefined && (
                 <div className={cn(
-                  "text-sm font-semibold px-3 py-1 rounded-full shadow-lg backdrop-blur-sm border",
+                  "text-xs sm:text-sm font-semibold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-lg backdrop-blur-sm border", // Smaller on mobile
                   player === "white"
                     ? "text-yellow-800 bg-yellow-100/95 border-yellow-300"
                     : "text-yellow-200 bg-yellow-900/90 border-yellow-600"
@@ -628,17 +658,19 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           )}
 
           {/* Main Time Display */}
-          <span className="font-unbounded text-8xl lg:text-9xl font-bold">
+          <span className="font-unbounded text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold"> {/* Smaller text on mobile */}
             {formatTime(time)}
           </span>
         </div>
-
+        
         {/* Action Buttons */}
         <motion.div
           className={cn(
-            "absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 action-button-container",
+            "absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20 action-button-container",
             // Enhanced contrast background for better visibility on white timer squares
-            needsContrastBackground && "p-3 rounded-2xl bg-black/20 backdrop-blur-xl border border-black/10 shadow-2xl"
+            needsContrastBackground && "p-2 rounded-2xl bg-black/20 backdrop-blur-xl border border-black/10 shadow-2xl",
+            // Add responsive sizing and positioning for mobile
+            "sm:gap-3 md:gap-3 max-w-[95%] flex-wrap justify-center"
           )}
           initial={false}
           data-action-button-container="true"
@@ -656,7 +688,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               }
             }}
             disabled={!isActive || !isRunning}
-            icon={<Check className="w-5 h-5" />}
+            icon={<Check className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Check"
           />
           <ActionButton
@@ -673,7 +705,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               }
             }}
             disabled={!isActive || !isRunning}
-            icon={<Trophy className="w-5 h-5" />}
+            icon={<Trophy className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Checkmate"
           />
           <ActionButton
@@ -690,7 +722,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               }
             }}
             disabled={!isActive || !isRunning}
-            icon={<Handshake className="w-5 h-5" />}
+            icon={<Handshake className="w-4 h-4 sm:w-5 sm:h-5" />}
             label="Draw"
           />
         </motion.div>
@@ -699,16 +731,22 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   };
 
   const MobileControls = () => (
-    <div className="md:hidden flex items-center gap-4 my-4 mb-6 justify-center">
+    <div className="md:hidden flex items-center gap-3 my-3 mb-4 justify-center">
       <ControlButton
         onClick={isRunning ? pauseTimer : resumeTimer}
-        icon={isRunning ? <Pause /> : <Play />}
+        icon={isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        className="px-3 py-1.5 text-xs" // Smaller buttons on mobile
       />
       <ControlButton
         onClick={() => setShowGestureHelp(true)}
-        icon={<HelpCircle />}
+        icon={<HelpCircle className="w-4 h-4" />}
+        className="px-3 py-1.5 text-xs" // Smaller buttons on mobile
       />
-      <ControlButton onClick={handleReset} icon={<RefreshCcw />} />
+      <ControlButton
+        onClick={handleReset}
+        icon={<RefreshCcw className="w-4 h-4" />}
+        className="px-3 py-1.5 text-xs" // Smaller buttons on mobile
+      />
     </div>
   );
 
@@ -866,3 +904,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     </motion.div>
   );
 };
+
+// At the end of the file
+export default ChessTimer;

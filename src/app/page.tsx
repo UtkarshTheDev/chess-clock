@@ -16,9 +16,10 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useTimerTypeStore, TimerMode } from "@/stores/timerTypeStore";
-import { ChessTimer } from "@/components/ChessTimer";
+// import ChessTimer from "@/components/ChessTimer";
 import { useStatsStore } from "@/stores/statsStore";
 import { createCustomConfig } from "@/lib/timerConfigs";
+import ChessTimer from "../components/ChessTimer";
 
 type GameState = "home" | "playing";
 

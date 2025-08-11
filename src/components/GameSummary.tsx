@@ -478,7 +478,7 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
       </div>
 
       {/* Phase Comparison Chart */}
-      <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-4 sm:p-6 rounded-lg border border-white/5">
         <h4 className="text-lg font-semibold text-white mb-4 text-center">Phase-Based Time Distribution</h4>
         <Bar
           data={{
@@ -492,6 +492,9 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
                   whiteStats.phaseStats.endgame.totalTime,
                 ],
                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderRadius: 6,
+                barPercentage: 0.7,
+                categoryPercentage: 0.8,
               },
               {
                 label: 'Black',
@@ -501,38 +504,91 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
                   blackStats.phaseStats.endgame.totalTime,
                 ],
                 backgroundColor: 'rgba(156, 163, 175, 0.8)',
+                borderRadius: 6,
+                barPercentage: 0.7,
+                categoryPercentage: 0.8,
               },
             ],
           }}
           options={{
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               legend: {
                 position: 'top' as const,
                 labels: {
                   color: 'rgb(255, 255, 255)',
+                  boxWidth: 15,
+                  padding: 10,
+                  font: {
+                    size: window.innerWidth < 768 ? 10 : 12,
+                  },
                 },
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    const value = context.raw as number;
+                    return `${context.dataset.label}: ${value.toFixed(1)}s`;
+                  }
+                },
+                titleFont: {
+                  size: window.innerWidth < 768 ? 12 : 14,
+                },
+                bodyFont: {
+                  size: window.innerWidth < 768 ? 11 : 13,
+                },
+                padding: 8,
+                displayColors: true,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
               },
             },
             scales: {
               x: {
                 ticks: {
                   color: 'rgb(156, 163, 175)',
+                  font: {
+                    size: window.innerWidth < 768 ? 10 : 12,
+                  },
                 },
                 grid: {
                   color: 'rgba(156, 163, 175, 0.1)',
+                  display: false,
                 },
               },
               y: {
                 ticks: {
                   color: 'rgb(156, 163, 175)',
+                  font: {
+                    size: window.innerWidth < 768 ? 10 : 12,
+                  },
                 },
                 grid: {
                   color: 'rgba(156, 163, 175, 0.1)',
                 },
+                beginAtZero: true,
               },
             },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart',
+            },
+            layout: {
+              padding: {
+                top: 5,
+                bottom: 5,
+                left: window.innerWidth < 768 ? 0 : 5,
+                right: window.innerWidth < 768 ? 0 : 5,
+              },
+            },
+            onHover: (event, elements) => {
+              if (event.native) {
+                const canvas = event.native.target as HTMLCanvasElement;
+                canvas.style.cursor = elements.length ? 'pointer' : 'default';
+              }
+            },
           }}
+          height={window.innerWidth < 768 ? 200 : 300} // Responsive height
         />
       </div>
     </div>
@@ -647,6 +703,34 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
           color: 'rgba(156, 163, 175, 0.1)',
         },
       },
+    },
+    animation: {
+      duration: 1000,
+      easing: 'easeOutQuart',
+    },
+    transitions: {
+      active: {
+        animation: {
+          duration: 400,
+        },
+      },
+    },
+    onHover: (event, elements) => {
+      if (event.native) {
+        const canvas = event.native.target as HTMLCanvasElement;
+        canvas.style.cursor = elements.length ? 'pointer' : 'default';
+
+        // Add subtle scale effect on hover
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          if (elements.length) {
+            ctx.canvas.style.transform = 'scale(1.01)';
+            ctx.canvas.style.transition = 'transform 0.2s ease';
+          } else {
+            ctx.canvas.style.transform = 'scale(1)';
+          }
+        }
+      }
     },
   };
 
@@ -1214,84 +1298,42 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
-    >
+    <div className="game-summary-dialog fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-5xl bg-neutral-900 rounded-2xl shadow-xl border border-white/10 max-h-[95vh] overflow-hidden flex flex-col game-summary-dialog"
+        className="w-full max-w-4xl bg-neutral-900 rounded-xl shadow-2xl border border-neutral-800 max-h-[90vh] overflow-hidden flex flex-col"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.3 }}
       >
         <WinnerBanner
           winner={winner}
           reason={endReason}
         />
 
-        <div className="flex justify-center px-6 py-2 border-b border-white/5">
-          <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={cn(
-              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-              activeTab === "overview"
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-300 hover:text-white hover:bg-white/10"
-            )}
-          >
-            <BarChart3 className="w-3 h-3" />
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab("comparison")}
-            className={cn(
-              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-              activeTab === "comparison"
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-300 hover:text-white hover:bg-white/10"
-            )}
-          >
-            <Users className="w-3 h-3" />
-            Compare
-          </button>
-          <button
-            onClick={() => setActiveTab("timeAnalysis")}
-            className={cn(
-              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-              activeTab === "timeAnalysis"
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-300 hover:text-white hover:bg-white/10"
-            )}
-          >
-            <Clock className="w-3 h-3" />
-            Time
-          </button>
-          <button
-            onClick={() => setActiveTab("insights")}
-            className={cn(
-              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-              activeTab === "insights"
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-300 hover:text-white hover:bg-white/10"
-            )}
-          >
-            <TrendingUp className="w-3 h-3" />
-            Insights
-          </button>
-          <button
-            onClick={() => setActiveTab("moveHistory")}
-            className={cn(
-              "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-              activeTab === "moveHistory"
-                ? "bg-white text-neutral-900 shadow-sm"
-                : "text-neutral-300 hover:text-white hover:bg-white/10"
-            )}
-          >
-            <History className="w-3 h-3" />
-            Moves
-          </button>
-          </div>
+        <div className="flex border-b border-neutral-800 overflow-x-auto custom-scrollbar">
+          {[
+            { id: "overview", label: "Overview", icon: <BarChart3 className="w-4 h-4" /> },
+            { id: "comparison", label: "Compare", icon: <Users className="w-4 h-4" /> },
+            { id: "timeAnalysis", label: "Time", icon: <Clock className="w-4 h-4" /> },
+            { id: "insights", label: "Insights", icon: <TrendingUp className="w-4 h-4" /> },
+            { id: "moveHistory", label: "Moves", icon: <History className="w-4 h-4" /> }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={cn(
+                "px-4 py-3 text-sm font-medium flex items-center gap-2 min-w-[120px] justify-center touch-manipulation",
+                "transition-all duration-200 border-b-2 -mb-px",
+                activeTab === tab.id
+                  ? "text-white border-white"
+                  : "text-neutral-400 border-transparent hover:text-neutral-200 hover:border-neutral-700"
+              )}
+            >
+              {tab.icon}
+              <span className="whitespace-nowrap">{tab.label}</span>
+            </button>
+          ))}
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 py-6 custom-scrollbar">
@@ -1395,9 +1437,9 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
             </motion.button>
           </div>
         </motion.div>
-                  </motion.div>
-                </motion.div>
-              );
-            };
+      </motion.div>
+    </div>
+  );
+};
 
-            export default GameSummary;
+export default GameSummary;
