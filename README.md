@@ -258,23 +258,18 @@ We welcome contributions from the chess and developer community! Whether you're 
 ## 🗺️ Roadmap
 
 ### 🔜 Coming Soon
-- [ ] 🌐 Online multiplayer support
-- [ ] 🏆 Tournament management features
 - [ ] 🎛️ Custom timer presets
-- [ ] 📹 Game recording and replay
-- [ ] 🔗 Integration with chess.com and Lichess
 
 ### 🚀 Future Plans
 - [ ] 📱 Native mobile app (React Native)
 - [ ] 🤖 AI-powered game analysis
 - [ ] 📊 Advanced statistics dashboard
-- [ ] 🎮 Tournament bracket management
 
 ## 📞 Support & Community
 
 - **🐛 Bug Reports**: [GitHub Issues](https://github.com/UtkarshTheDev/ChessTicks/issues)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/UtkarshTheDev/ChessTicks/discussions)
-- **📧 Contact**: your.email@example.com
+- **📧 Contact**: utkarshweb2023@gmail.com
 - **🌐 Live App**: [chessticks.vercel.app](https://chessticks.vercel.app)
 
 ## 📝 License
