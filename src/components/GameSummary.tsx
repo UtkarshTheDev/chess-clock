@@ -616,11 +616,13 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top' as const,
         labels: {
           color: 'rgb(255, 255, 255)',
+          font: { size: 14 },
         },
       },
       title: {
@@ -628,12 +630,27 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
         text: chartType === 'timeRemaining' ? 'Time Remaining Over Moves' :
               chartType === 'moveTime' ? 'Move Time Analysis' : 'Phase-Based Time Usage',
         color: 'rgb(255, 255, 255)',
+        font: { size: 16 },
+      },
+    },
+    elements: {
+      point: { radius: 5, hoverRadius: 8 },
+      line: { borderWidth: 3 },
+      bar: {},
+    },
+    datasets: {
+      bar: {
+        maxBarThickness: 28,
+        borderRadius: 8,
+        barPercentage: 0.9,
+        categoryPercentage: 0.8,
       },
     },
     scales: {
       x: {
         ticks: {
           color: 'rgb(156, 163, 175)',
+          font: { size: 12 },
         },
         grid: {
           color: 'rgba(156, 163, 175, 0.1)',
@@ -642,13 +659,14 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
       y: {
         ticks: {
           color: 'rgb(156, 163, 175)',
+          font: { size: 12 },
         },
         grid: {
           color: 'rgba(156, 163, 175, 0.1)',
         },
       },
     },
-  };
+  } as const;
 
   return (
     <div className="space-y-6">
@@ -700,15 +718,17 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
 
       {/* Chart Display */}
       <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
-        {chartType === 'timeRemaining' && (
-          <Line data={timeRemainingData} options={chartOptions} />
-        )}
-        {chartType === 'moveTime' && (
-          <Bar data={moveTimeData} options={chartOptions} />
-        )}
-        {chartType === 'phaseAnalysis' && (
-          <Bar data={phaseData} options={chartOptions} />
-        )}
+        <div className="h-[24rem] sm:h-[26rem] md:h-[18rem] lg:h-[20rem]">
+          {chartType === 'timeRemaining' && (
+            <Line data={timeRemainingData} options={chartOptions} />
+          )}
+          {chartType === 'moveTime' && (
+            <Bar data={moveTimeData} options={chartOptions} />
+          )}
+          {chartType === 'phaseAnalysis' && (
+            <Bar data={phaseData} options={chartOptions} />
+          )}
+        </div>
       </div>
 
       {/* Timer-Mode-Specific Quick Stats */}

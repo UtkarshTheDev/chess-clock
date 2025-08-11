@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Pie } from "react-chartjs-2";
+import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -48,19 +48,21 @@ const PhaseDistribution = ({
   );
 
   const createOptions = useCallback(
-    (stats: PlayerStats): ChartOptions<"pie"> => ({
+    (stats: PlayerStats): ChartOptions<"doughnut"> => ({
+      cutout: "65%",
       plugins: {
-        legend: {
-          display: false,
-        },
+        legend: { display: false },
         tooltip: {
+          backgroundColor: "rgba(17, 24, 39, 0.95)",
+          borderColor: "rgba(255,255,255,0.08)",
+          borderWidth: 1,
+          padding: 10,
           callbacks: {
             label: (context) => {
               const value = context.raw as number;
               const total = stats.totalTimeUsed || 1;
-              return `${Math.round(value)}s (${Math.round(
-                (value / total) * 100
-              )}%)`;
+              const pct = Math.round((value / total) * 100);
+              return `${Math.round(value)}s (${pct}%)`;
             },
           },
         },
@@ -79,8 +81,8 @@ const PhaseDistribution = ({
     color: string;
   }) => (
     <div className="flex items-center gap-2">
-      <div className={cn("w-3 h-3 rounded-full", `bg-[${color}]`)} />
-      <span className="text-sm text-white/80">{phase}</span>
+      <div className={cn("w-3.5 h-3.5 rounded-full")} style={{ backgroundColor: color }} />
+      <span className="text-base text-white/85">{phase}</span>
     </div>
   );
 
@@ -93,12 +95,12 @@ const PhaseDistribution = ({
       {/* White Player */}
       <div className="space-y-4">
         <h4 className="text-lg font-medium text-white">White</h4>
-        <div className="relative h-48">
-          <Pie
+        <motion.div className="relative h-72 md:h-56" whileTap={{ scale: 0.98 }}>
+          <Doughnut
             data={createPieData(whiteStats)}
             options={createOptions(whiteStats)}
           />
-        </div>
+        </motion.div>
         <div className="flex justify-around mt-4">
           {Object.entries(phaseColors).map(([phase, color]) => (
             <PhaseIndicator key={phase} phase={phase} color={color} />
@@ -117,12 +119,12 @@ const PhaseDistribution = ({
       {/* Black Player */}
       <div className="space-y-4">
         <h4 className="text-lg font-medium text-white">Black</h4>
-        <div className="relative h-48">
-          <Pie
+        <motion.div className="relative h-72 md:h-56" whileTap={{ scale: 0.98 }}>
+          <Doughnut
             data={createPieData(blackStats)}
             options={createOptions(blackStats)}
           />
-        </div>
+        </motion.div>
         <div className="flex justify-around mt-4">
           {Object.entries(phaseColors).map(([phase, color]) => (
             <PhaseIndicator key={phase} phase={phase} color={color} />

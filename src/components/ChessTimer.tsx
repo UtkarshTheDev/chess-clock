@@ -633,12 +633,24 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           </span>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons Dock (mobile-focused) */}
         <motion.div
           className={cn(
-            "absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 action-button-container",
-            // Enhanced contrast background for better visibility on white timer squares
-            needsContrastBackground && "p-3 rounded-2xl bg-black/20 backdrop-blur-xl border border-black/10 shadow-2xl"
+            // Positioning inside the square with safe bottom spacing
+            "absolute left-1/2 -translate-x-1/2 z-20 action-button-container",
+            "bottom-4 sm:bottom-5",
+            // Layout: keep in a single row, allow horizontal scroll when needed
+            "flex flex-nowrap items-center gap-3 sm:gap-4 whitespace-nowrap",
+            // Horizontal scroll for ultra-narrow screens with hidden scrollbar
+            "overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+            // Constrain width well within the square and add comfy padding for tap
+            "max-w-[94%] px-3 sm:px-4 py-2.5 sm:py-3",
+            // Enable scroll snapping for buttons
+            "scroll-px-3 snap-x snap-mandatory",
+            // Visual: compact floating dock with strong contrast on light (white) timers
+            needsContrastBackground
+              ? "rounded-2xl bg-black/35 border border-black/30 ring-1 ring-white/5 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+              : "rounded-2xl bg-neutral-900/60 border border-white/15 ring-1 ring-white/10 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.45)]",
           )}
           initial={false}
           data-action-button-container="true"

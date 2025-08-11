@@ -51,8 +51,8 @@ const TimeGraph = () => {
         backgroundColor: "rgba(219, 234, 254, 0.1)",
         fill: true,
         tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 5,
+        pointHoverRadius: 8,
         pointBackgroundColor: "rgba(219, 234, 254, 0.8)",
         pointBorderColor: "rgba(219, 234, 254, 0.8)",
       },
@@ -68,8 +68,8 @@ const TimeGraph = () => {
         backgroundColor: "rgba(55, 65, 81, 0.1)",
         fill: true,
         tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 5,
+        pointHoverRadius: 8,
         pointBackgroundColor: "rgba(55, 65, 81, 0.8)",
         pointBorderColor: "rgba(55, 65, 81, 0.8)",
       },
@@ -94,7 +94,7 @@ const TimeGraph = () => {
           color: "rgba(255, 255, 255, 0.8)",
           font: {
             family: "system-ui",
-            size: 12,
+            size: 13,
           },
           usePointStyle: true,
           pointStyle: "circle",
@@ -106,8 +106,8 @@ const TimeGraph = () => {
         bodyColor: "rgba(255, 255, 255, 0.8)",
         borderColor: "rgba(255, 255, 255, 0.1)",
         borderWidth: 1,
-        padding: 12,
-        boxPadding: 6,
+        padding: 14,
+        boxPadding: 8,
         usePointStyle: true,
         callbacks: {
           title: function (tooltipItems: TooltipItem<"line">[]) {
@@ -144,7 +144,7 @@ const TimeGraph = () => {
           text: "Move Number",
           color: "rgba(255, 255, 255, 0.8)",
           font: {
-            size: 12,
+            size: 14,
           },
         },
         grid: {
@@ -153,7 +153,7 @@ const TimeGraph = () => {
         ticks: {
           color: "rgba(255, 255, 255, 0.8)",
           font: {
-            size: 10,
+            size: 12,
           },
         },
       },
@@ -163,7 +163,7 @@ const TimeGraph = () => {
           text: "Time (seconds)",
           color: "rgba(255, 255, 255, 0.8)",
           font: {
-            size: 12,
+            size: 14,
           },
         },
         grid: {
@@ -172,7 +172,7 @@ const TimeGraph = () => {
         ticks: {
           color: "rgba(255, 255, 255, 0.8)",
           font: {
-            size: 10,
+            size: 12,
           },
         },
       },
@@ -187,7 +187,7 @@ const TimeGraph = () => {
       className="p-6 rounded-xl bg-neutral-900/50 border border-neutral-800/50"
     >
       <h3 className="text-xl font-bold text-white mb-4">Time Usage Trends</h3>
-      <div className="h-[300px]">
+      <div className="h-[24rem] sm:h-[26rem] md:h-80 lg:h-96">
         <Line data={data} options={options} />
       </div>
     </motion.div>

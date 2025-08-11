@@ -37,12 +37,22 @@ export const ActionButton = ({
       disabled={disabled}
       data-action-button={variant}
       className={cn(
-        "px-4 py-2.5 rounded-xl",
+        // Sizing: compact on small screens, comfortable touch targets
+        "rounded-xl",
+        "px-3 py-2 sm:px-4 sm:py-2.5",
+        // Minimum recommended touch target size (slightly larger on small screens)
+        "min-h-[46px] min-w-[46px] sm:min-h-[48px] sm:min-w-[48px]",
+        // Prevent shrinking and keep buttons in a single row without overflow
+        "shrink-0 max-w-full",
+        // Transitions and borders
         "border-2 transition-all duration-300",
-        "flex items-center gap-2.5",
-        "font-semibold text-sm",
+        // Layout
+        "flex items-center gap-2 sm:gap-2.5",
+        // Typography
+        "font-semibold text-xs sm:text-sm",
+        // Effects
         "backdrop-blur-md relative overflow-hidden",
-        "transform hover:-translate-y-1 active:translate-y-0",
+        "transform hover:-translate-y-0.5 active:translate-y-0",
         disabled ? variants[variant].disabled : variants[variant].base,
         // Enhanced styling for better visibility on white backgrounds
         "ring-1 ring-black/10",
@@ -50,10 +60,10 @@ export const ActionButton = ({
         disabled && "opacity-60 cursor-not-allowed hover:translate-y-0"
       )}
       whileHover={{
-        scale: disabled ? 1 : 1.05,
+        scale: disabled ? 1 : 1.03,
         boxShadow: disabled ? undefined : "0 10px 25px rgba(0, 0, 0, 0.2)"
       }}
-      whileTap={{ scale: disabled ? 1 : 0.95 }}
+      whileTap={{ scale: disabled ? 1 : 0.97 }}
       initial={false}
     >
       {/* Subtle shine effect for premium feel */}
@@ -72,10 +82,13 @@ export const ActionButton = ({
       >
         {icon}
       </motion.span>
-      <span className={cn(
-        "font-bold tracking-wide relative z-10",
-        disabled && "opacity-80"
-      )}>
+      <span
+        className={cn(
+          // Hide label on extremely narrow screens to preserve horizontal layout
+          "hidden [@media(min-width:360px)]:inline font-bold tracking-wide relative z-10",
+          disabled && "opacity-80"
+        )}
+      >
         {label}
       </span>
     </motion.button>
