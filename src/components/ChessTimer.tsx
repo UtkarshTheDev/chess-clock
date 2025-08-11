@@ -590,7 +590,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           "sm:max-w-[90%] md:max-w-[90%] max-h-[45vh]"
         )}
       >
-        <div className="flex flex-col items-center justify-center h-full">
+        <div className="flex flex-col items-center justify-center h-full pb-16 sm:pb-20">
           {/* Timer Mode Info */}
           {displayInfo && (displayInfo.delayTime !== undefined || displayInfo.pendingIncrement !== undefined || displayInfo.stageInfo) && (
             <div className="mb-2 text-center">
@@ -628,7 +628,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           )}
 
           {/* Main Time Display */}
-          <span className="font-unbounded text-8xl lg:text-9xl font-bold">
+          <span className="font-unbounded text-8xl mt-12 sm:text-[7.5rem] lg:text-[9rem] font-bold leading-none select-none">
             {formatTime(time)}
           </span>
         </div>
@@ -636,11 +636,41 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         {/* Action Buttons */}
         <motion.div
           className={cn(
-            "absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20 action-button-container",
-            // Enhanced contrast background for better visibility on white timer squares
-            needsContrastBackground && "p-3 rounded-2xl bg-black/20 backdrop-blur-xl border border-black/10 shadow-2xl"
+            // Positioning
+            "absolute inset-x-0 bottom-4 w-fit mx-auto z-20 action-button-container",
+            // Layout: keep in one row, prevent wrapping
+            "flex flex-nowrap items-center",
+            // Responsive spacing and padding
+            "gap-2 sm:gap-3 px-2.5 py-2 sm:px-3 sm:py-2.5",
+            // Shape and base visuals
+            "rounded-2xl border",
+            // Constrain width to timer square, avoid overflow
+            "max-w-[calc(100%-16px)]",
+            // State-aware container background, border, ring, and shadow
+            isRunning && isActive && (
+              player === "white"
+                ? "bg-neutral-900/70 border-black/30 ring-1 ring-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur-xl"
+                : "bg-white/15 border-white/25 ring-1 ring-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+            ),
+            isRunning && !isActive && (
+              player === "white"
+                ? "bg-gradient-to-tr from-neutral-950/80 to-neutral-800/60 border-neutral-900/40 ring-1 ring-white/10 shadow-[0_6px_24px_rgba(0,0,0,0.25)] backdrop-blur-xl"
+                : "bg-white/10 border-white/15 shadow-xl backdrop-blur-md"
+            ),
+            !isRunning && (
+              player === "white"
+                ? "bg-gradient-to-tr from-neutral-950/70 to-neutral-800/50 border-neutral-900/30 ring-1 ring-white/10 shadow-lg backdrop-blur-md"
+                : "bg-white/8 border-white/10 shadow-lg backdrop-blur-sm"
+            )
           )}
           initial={false}
+          animate={{
+            opacity: isRunning ? (isActive ? 1 : 0.9) : 0.85,
+            scale: isRunning ? (isActive ? 1 : 0.99) : 0.99,
+            y: isRunning ? (isActive ? 0 : 2) : 2,
+            filter: isRunning ? "saturate(1)" : "saturate(0.95)",
+          }}
+          transition={{ duration: 0.22, ease: "easeOut" }}
           data-action-button-container="true"
           onClick={(e) => e.stopPropagation()}
           onTouchStart={(e) => e.stopPropagation()}
@@ -674,7 +704,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             }}
             disabled={!isActive || !isRunning}
             icon={<Trophy className="w-5 h-5" />}
-            label="Checkmate"
+            label="Mate"
           />
           <ActionButton
             variant="draw"
@@ -758,7 +788,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           </div>
         </div>
         
-        <div className="md:flex max-md:flex-col h-full w-full">
+        <div className="md:flex max-lg:flex-col h-full w-full">
           {/* Black Timer Container - No phase background */}
           <div
             className={cn(

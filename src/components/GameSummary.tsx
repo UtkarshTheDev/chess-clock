@@ -478,62 +478,84 @@ const PlayerComparison = ({ whiteStats, blackStats }: { whiteStats: PlayerStats;
       </div>
 
       {/* Phase Comparison Chart */}
-      <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
-        <h4 className="text-lg font-semibold text-white mb-4 text-center">Phase-Based Time Distribution</h4>
-        <Bar
-          data={{
-            labels: ['Opening', 'Middlegame', 'Endgame'],
-            datasets: [
-              {
-                label: 'White',
-                data: [
-                  whiteStats.phaseStats.opening.totalTime,
-                  whiteStats.phaseStats.middlegame.totalTime,
-                  whiteStats.phaseStats.endgame.totalTime,
-                ],
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              },
-              {
-                label: 'Black',
-                data: [
-                  blackStats.phaseStats.opening.totalTime,
-                  blackStats.phaseStats.middlegame.totalTime,
-                  blackStats.phaseStats.endgame.totalTime,
-                ],
-                backgroundColor: 'rgba(156, 163, 175, 0.8)',
-              },
-            ],
-          }}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: {
-                position: 'top' as const,
-                labels: {
-                  color: 'rgb(255, 255, 255)',
-                },
-              },
-            },
-            scales: {
-              x: {
-                ticks: {
-                  color: 'rgb(156, 163, 175)',
-                },
-                grid: {
-                  color: 'rgba(156, 163, 175, 0.1)',
-                },
-              },
-              y: {
-                ticks: {
-                  color: 'rgb(156, 163, 175)',
-                },
-                grid: {
-                  color: 'rgba(156, 163, 175, 0.1)',
-                },
-              },
-            },
-          }}
-        />
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-4 sm:p-6 rounded-lg border border-white/5">
+        <h4 className="text-lg font-semibold text-white mb-3 sm:mb-4 text-center">Phase-Based Time Distribution</h4>
+        <div className="relative h-[240px] sm:h-[300px] md:h-[340px]">
+          {(() => {
+            const whiteTotals = [
+              whiteStats.phaseStats.opening.totalTime,
+              whiteStats.phaseStats.middlegame.totalTime,
+              whiteStats.phaseStats.endgame.totalTime,
+            ];
+            const blackTotals = [
+              blackStats.phaseStats.opening.totalTime,
+              blackStats.phaseStats.middlegame.totalTime,
+              blackStats.phaseStats.endgame.totalTime,
+            ];
+            const maxVal = Math.max(...whiteTotals, ...blackTotals);
+            return (
+              <Bar
+                data={{
+                  labels: ['Opening', 'Middlegame', 'Endgame'],
+                  datasets: [
+                    {
+                      label: 'White',
+                      data: whiteTotals,
+                      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+                      borderColor: 'rgba(255,255,255,0.9)',
+                      borderWidth: 1,
+                    },
+                    {
+                      label: 'Black',
+                      data: blackTotals,
+                      backgroundColor: 'rgba(156, 163, 175, 0.8)',
+                      borderColor: 'rgba(156,163,175,0.9)',
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  animation: { duration: 300, easing: 'easeOutQuad' },
+                  interaction: { mode: 'index', intersect: false },
+                  plugins: {
+                    legend: {
+                      position: 'top' as const,
+                      labels: {
+                        color: 'rgb(255, 255, 255)',
+                        font: { size: 11 },
+                      },
+                    },
+                    title: { display: false },
+                  },
+                  scales: {
+                    x: {
+                      ticks: {
+                        color: 'rgb(156, 163, 175)',
+                        font: { size: 10 },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 3,
+                      },
+                      grid: { color: 'rgba(156, 163, 175, 0.08)' },
+                    },
+                    y: {
+                      beginAtZero: true,
+                      suggestedMax: maxVal * 1.1,
+                      ticks: {
+                        color: 'rgb(156, 163, 175)',
+                        font: { size: 10 },
+                        maxTicksLimit: 4,
+                      },
+                      grid: { color: 'rgba(156, 163, 175, 0.08)' },
+                    },
+                  },
+                }}
+              />
+            );
+          })()}
+        </div>
       </div>
     </div>
   );
@@ -616,11 +638,15 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 300, easing: 'easeOutQuad' },
+    interaction: { mode: 'index' as const, intersect: false },
     plugins: {
       legend: {
         position: 'top' as const,
         labels: {
           color: 'rgb(255, 255, 255)',
+          font: { size: 11 },
         },
       },
       title: {
@@ -628,23 +654,38 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
         text: chartType === 'timeRemaining' ? 'Time Remaining Over Moves' :
               chartType === 'moveTime' ? 'Move Time Analysis' : 'Phase-Based Time Usage',
         color: 'rgb(255, 255, 255)',
+        font: { size: 12 },
+      },
+      tooltip: {
+        enabled: true,
+        usePointStyle: true,
+        boxPadding: 4,
+        padding: 8,
+        bodyFont: { size: 12 },
+        titleFont: { size: 12 },
       },
     },
     scales: {
       x: {
         ticks: {
           color: 'rgb(156, 163, 175)',
+          font: { size: 10 },
+          maxRotation: 0,
+          autoSkip: true,
         },
         grid: {
-          color: 'rgba(156, 163, 175, 0.1)',
+          color: 'rgba(156, 163, 175, 0.08)',
         },
       },
       y: {
+        beginAtZero: true,
         ticks: {
           color: 'rgb(156, 163, 175)',
+          font: { size: 10 },
+          maxTicksLimit: 5,
         },
         grid: {
-          color: 'rgba(156, 163, 175, 0.1)',
+          color: 'rgba(156, 163, 175, 0.08)',
         },
       },
     },
@@ -699,16 +740,18 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
       </div>
 
       {/* Chart Display */}
-      <div className="bg-neutral-800/50 backdrop-blur-sm p-6 rounded-lg border border-white/5">
-        {chartType === 'timeRemaining' && (
-          <Line data={timeRemainingData} options={chartOptions} />
-        )}
-        {chartType === 'moveTime' && (
-          <Bar data={moveTimeData} options={chartOptions} />
-        )}
-        {chartType === 'phaseAnalysis' && (
-          <Bar data={phaseData} options={chartOptions} />
-        )}
+      <div className="bg-neutral-800/50 backdrop-blur-sm p-4 sm:p-6 rounded-lg border border-white/5">
+        <div className="relative h-[260px] sm:h-[320px] md:h-[360px]">
+          {chartType === 'timeRemaining' && (
+            <Line data={timeRemainingData} options={chartOptions} />
+          )}
+          {chartType === 'moveTime' && (
+            <Bar data={moveTimeData} options={chartOptions} />
+          )}
+          {chartType === 'phaseAnalysis' && (
+            <Bar data={phaseData} options={chartOptions} />
+          )}
+        </div>
       </div>
 
       {/* Timer-Mode-Specific Quick Stats */}
