@@ -43,6 +43,7 @@
     "@radix-ui/react-tooltip": "^1.1.6",
     "@react-three/fiber": "^9.1.2",
     "@types/jest": "^30.0.0",
+    "@types/three": "^0.179.0",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.7",
     "class-variance-authority": "^0.7.1",
