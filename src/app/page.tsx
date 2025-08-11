@@ -20,10 +20,10 @@ import { ChessTimer } from "@/components/ChessTimer";
 import { useStatsStore } from "@/stores/statsStore";
 import { createCustomConfig } from "@/lib/timerConfigs";
 import GlareHover from "../Animations/GlareHover/GlareHover";
-import Noise from "../Animations/Noise/Noise";
 
 
 import ShinyText from "../TextAnimations/ShinyText/ShinyText";
+import Silk from "../Backgrounds/Silk/Silk";
 
 type GameState = "home" | "playing";
 
@@ -153,13 +153,6 @@ export default function Home() {
 
     return (
       <>
-        <Noise
-    patternSize={1024}
-    patternScaleX={1}
-    patternScaleY={1}
-    patternRefreshInterval={5}
-    patternAlpha={10}
-  />
         <div className="mt-0 space-y-2 flex flex-col items-center justify-center">
           <Image
             src={"/logo.png"}
@@ -255,8 +248,8 @@ export default function Home() {
                 <GlareHover
                   width="100%"
                   height="100%"
-                  glareColor="#ffffff"
-                  glareOpacity={0.15}
+                  glareColor="#22c55e"
+                  glareOpacity={0.75}
                   glareAngle={-30}
                   glareSize={300}
                   transitionDuration={800}
@@ -302,8 +295,19 @@ export default function Home() {
         </ul>
       </div>
 
+      {/* Full-page Silk background */}
+      <div className="fixed inset-0 -z-10 pointer-events-none">
+        <Silk
+          speed={12}
+          scale={1}
+          color="#242424"
+          noiseIntensity={3}
+          rotation={6}
+        />
+      </div>
+
       <main
-        className="flex flex-col items-center min-h-screen px-4 py-6 sm:px-6 lg:px-8 bg-[#121212]"
+        className="flex flex-col items-center min-h-screen px-4 py-6 sm:px-6 lg:px-8"
         role="main"
         aria-label="Chess Timer Application"
       >

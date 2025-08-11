@@ -41,6 +41,7 @@
     "@radix-ui/react-slider": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.6",
+    "@react-three/fiber": "^9.1.2",
     "@types/jest": "^30.0.0",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.7",
@@ -55,6 +56,7 @@
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.167.1",
     "use-sound": "^4.0.3",
     "zustand": "^5.0.1"
   },
