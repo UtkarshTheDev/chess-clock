@@ -19,6 +19,7 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
+import type { ChartOptions } from 'chart.js';
 
 // Register Chart.js components
 ChartJS.register(
@@ -636,10 +637,10 @@ const TimeAnalysis = ({ whiteStats, blackStats }: { whiteStats: PlayerStats; bla
     ],
   };
 
-  const chartOptions = {
+  const chartOptions: ChartOptions<'line' | 'bar'> = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 300, easing: 'easeOutQuad' },
+    animation: { duration: 300, easing: 'easeOutQuad' as const },
     interaction: { mode: 'index' as const, intersect: false },
     plugins: {
       legend: {

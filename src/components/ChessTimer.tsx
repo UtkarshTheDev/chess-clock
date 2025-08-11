@@ -538,10 +538,6 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
       }
     };
 
-    // Determine if we need to add a background to action buttons for better contrast
-    // Apply to white background cards, whether active or not
-    const needsContrastBackground = player === "white";
-    
     const gestureHandlers = useGestures({
       onSingleTap: (event: React.MouseEvent | React.TouchEvent) => {
         // Check if the click came from an action button
