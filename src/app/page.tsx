@@ -13,6 +13,7 @@ import TimerModeSelector, {
 } from "@/components/HomePage/TimerModeSelector";
 import StartGameButton from "@/components/HomePage/StartGameButton";
 import SeoContent from "@/components/HomePage/SeoContent";
+import GitHubButton from "@/components/HomePage/GitHubButton";
 
 type GameState = "home" | "playing";
 
@@ -60,6 +61,9 @@ export default function Home() {
     return (
       <>
         <Header />
+        <div className="mt-2 sm:mt-3 flex justify-center">
+          <GitHubButton />
+        </div>
         <div className="mt-4 flex justify-center items-center w-full flex-col space-y-6">
           <DurationSelector selectedTime={time} onTimeSelect={setTime} />
           <TimerModeSelector
