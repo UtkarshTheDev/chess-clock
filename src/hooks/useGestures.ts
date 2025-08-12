@@ -27,7 +27,7 @@ export default function useGestures(
     handlersRef.current = handlers;
   }, [handlers]);
 
-  const longPressTimeout = useRef<NodeJS.Timeout>();
+  const longPressTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
   const isLongPress = useRef<boolean>(false);
 
   const clearTimeouts = useCallback(() => {
