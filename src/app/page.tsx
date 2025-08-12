@@ -13,7 +13,6 @@ import TimerModeSelector, {
 } from "@/components/HomePage/TimerModeSelector";
 import StartGameButton from "@/components/HomePage/StartGameButton";
 import SeoContent from "@/components/HomePage/SeoContent";
-import TargetCursor from "@/Animations/TargetCursor/TargetCursor";
 
 type GameState = "home" | "playing";
 
