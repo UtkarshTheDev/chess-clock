@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Ubuntu, Ubuntu_Condensed, Unbounded } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next"
 
 const ubuntu = Ubuntu({
   subsets: ["latin"],
@@ -335,6 +336,7 @@ export default function RootLayout({
       </head>
       <body className={`${ubuntu.variable} ${ubuntuCondensed.variable} ${unbounded.variable} m-0 p-0`}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
