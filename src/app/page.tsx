@@ -8,9 +8,12 @@ import { useStatsStore } from "@/stores/statsStore";
 import Silk from "@/Backgrounds/Silk/Silk";
 import Header from "@/components/HomePage/Header";
 import DurationSelector from "@/components/HomePage/DurationSelector";
-import TimerModeSelector, { types } from "@/components/HomePage/TimerModeSelector";
+import TimerModeSelector, {
+  types,
+} from "@/components/HomePage/TimerModeSelector";
 import StartGameButton from "@/components/HomePage/StartGameButton";
 import SeoContent from "@/components/HomePage/SeoContent";
+import TargetCursor from "@/Animations/TargetCursor/TargetCursor";
 
 type GameState = "home" | "playing";
 
@@ -60,7 +63,10 @@ export default function Home() {
         <Header />
         <div className="mt-4 flex justify-center items-center w-full flex-col space-y-6">
           <DurationSelector selectedTime={time} onTimeSelect={setTime} />
-          <TimerModeSelector selectedMode={selectedMode} onModeSelect={setSelectedMode} />
+          <TimerModeSelector
+            selectedMode={selectedMode}
+            onModeSelect={setSelectedMode}
+          />
         </div>
         <StartGameButton onClick={startGame} />
       </>
@@ -70,6 +76,7 @@ export default function Home() {
   return (
     <>
       <SeoContent />
+
       <div className="fixed inset-0 -z-10 pointer-events-none">
         <Silk
           speed={12}

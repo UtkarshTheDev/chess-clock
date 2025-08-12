@@ -1,5 +1,5 @@
 import Image from "next/image";
-import ShinyText from "../../TextAnimations/ShinyText/ShinyText";
+import { TextShimmerWave } from "../ui/text-shimmer-wave";
 
 const Header = () => (
   <div className="mt-0 space-y-2 flex flex-col items-center justify-center">
@@ -11,7 +11,16 @@ const Header = () => (
       alt="ChessTicks - Professional Chess Timer and Tournament Clock Logo"
       priority
     />
-    <ShinyText text="Chess Ticks" disabled={false} speed={3} className='text-lg font-bold text-white tracking-normal font-unbounded' />
+     <TextShimmerWave
+      className='[--base-color:#f8f8f8] [--base-gradient-color:#ffffff] text-lg font-bold tracking-wide font-unbounded'
+      duration={1.75}
+      spread={2}
+      zDistance={12}
+      scaleDistance={1.1}
+      rotateYDistance={12}
+    >
+      Chess Ticks
+    </TextShimmerWave>
   </div>
 );
 

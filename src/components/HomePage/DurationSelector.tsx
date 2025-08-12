@@ -41,7 +41,7 @@ const DurationSelector: React.FC<DurationSelectorProps> = ({ selectedTime, onTim
         <button
           key={index}
           onClick={() => onTimeSelect(duration.duration)}
-          className={`border ${
+          className={`cursor-target border ${
             selectedTime === duration.duration
               ? "border-white bg-green-500"
               : "border-neutral-800 bg-primary"

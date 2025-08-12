@@ -67,7 +67,7 @@ const TimerModeSelector: React.FC<TimerModeSelectorProps> = ({ selectedMode, onM
         <button
           key={index}
           onClick={() => onModeSelect(typeItem.mode)}
-          className={`border ${
+          className={`cursor-target border ${
             selectedMode === typeItem.mode
               ? "border-white bg-green-500"
               : "border-neutral-800 bg-primary"

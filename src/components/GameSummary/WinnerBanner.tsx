@@ -2,17 +2,21 @@ import { motion } from "framer-motion";
 import { Crown, Handshake, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTimerTypeStore } from "@/stores/timerTypeStore";
-import ShinyText from "../../TextAnimations/ShinyText/ShinyText";
+import { TextShimmerWave } from "../ui/text-shimmer-wave";
 
 function ShinyWinnerText({ winner }: { winner: string }) {
   const text = winner === "draw" ? "Game Drawn" : `${winner.charAt(0).toUpperCase() + winner.slice(1)} Wins!`;
   return (
-    <ShinyText
-      text={text}
-      disabled={false}
-      speed={7}
-      className="text-4xl"
-    />
+   <TextShimmerWave
+    className='[--base-color:#f8f8f8] [--base-gradient-color:#ffffff] text-2xl font-bold tracking-wide font-unbounded'
+    duration={1.75}
+    spread={2}
+    zDistance={12}
+    scaleDistance={1.1}
+    rotateYDistance={12}
+  >
+    {text}
+  </TextShimmerWave>
   );
 }
 
