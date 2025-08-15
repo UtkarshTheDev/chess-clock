@@ -74,6 +74,25 @@ const customStyles = `
     background-clip: content-box;
   }
 
+  /* Horizontal scrolling behavior for the tab list on small screens */
+  .tablist-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .tablist-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+  .tablist-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .tablist-scroll::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.4);
+    border-radius: 4px;
+  }
+  .tablist-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.6);
+  }
+
   .tooltip-container {
     position: relative;
     overflow: visible;
@@ -87,6 +106,9 @@ const customStyles = `
   @media (max-width: 768px) {
     .custom-scrollbar::-webkit-scrollbar {
       width: 4px;
+    }
+    .tablist-scroll::-webkit-scrollbar {
+      height: 4px;
     }
   }
 `;
@@ -161,68 +183,84 @@ const GameSummary = ({ onNewGame, onExit }: GameSummaryProps) => {
       >
         <WinnerBanner winner={winner} reason={endReason} />
 
-        <div className="flex justify-center px-6 py-2 border-b border-white/5">
-          <div className="flex gap-1 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm">
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={cn(
-                "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-                activeTab === "overview"
-                  ? "bg-white text-neutral-900 shadow-sm"
-                  : "text-neutral-300 hover:text-white hover:bg-white/10"
-              )}
-            >
-              <BarChart3 className="w-3 h-3" />
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab("comparison")}
-              className={cn(
-                "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-                activeTab === "comparison"
-                  ? "bg-white text-neutral-900 shadow-sm"
-                  : "text-neutral-300 hover:text-white hover:bg-white/10"
-              )}
-            >
-              <Users className="w-3 h-3" />
-              Compare
-            </button>
-            <button
-              onClick={() => setActiveTab("timeAnalysis")}
-              className={cn(
-                "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-                activeTab === "timeAnalysis"
-                  ? "bg-white text-neutral-900 shadow-sm"
-                  : "text-neutral-300 hover:text-white hover:bg-white/10"
-              )}
-            >
-              <Clock className="w-3 h-3" />
-              Time
-            </button>
-            <button
-              onClick={() => setActiveTab("insights")}
-              className={cn(
-                "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-                activeTab === "insights"
-                  ? "bg-white text-neutral-900 shadow-sm"
-                  : "text-neutral-300 hover:text-white hover:bg-white/10"
-              )}
-            >
-              <TrendingUp className="w-3 h-3" />
-              Insights
-            </button>
-            <button
-              onClick={() => setActiveTab("moveHistory")}
-              className={cn(
-                "flex items-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
-                activeTab === "moveHistory"
-                  ? "bg-white text-neutral-900 shadow-sm"
-                  : "text-neutral-300 hover:text-white hover:bg-white/10"
-              )}
-            >
-              <History className="w-3 h-3" />
-              Moves
-            </button>
+        <div className="flex justify-center px-3 sm:px-6 py-2 border-b border-white/5">
+          <div
+            role="tablist"
+            aria-label="Game summary sections"
+            className="relative w-full max-w-full overflow-x-auto tablist-scroll"
+          >
+            <div className="flex flex-nowrap gap-1 bg-neutral-800/50 p-1 rounded-xl backdrop-blur-sm min-w-max">
+              <button
+                role="tab"
+                aria-selected={activeTab === "overview"}
+                onClick={() => setActiveTab("overview")}
+                className={cn(
+                  "flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900",
+                  activeTab === "overview"
+                    ? "bg-white text-neutral-900 shadow-sm"
+                    : "text-neutral-300 hover:text-white hover:bg-white/10"
+                )}
+              >
+                <BarChart3 className="w-3 h-3" />
+                Overview
+              </button>
+              <button
+                role="tab"
+                aria-selected={activeTab === "comparison"}
+                onClick={() => setActiveTab("comparison")}
+                className={cn(
+                  "flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900",
+                  activeTab === "comparison"
+                    ? "bg-white text-neutral-900 shadow-sm"
+                    : "text-neutral-300 hover:text-white hover:bg-white/10"
+                )}
+              >
+                <Users className="w-3 h-3" />
+                Compare
+              </button>
+              <button
+                role="tab"
+                aria-selected={activeTab === "timeAnalysis"}
+                onClick={() => setActiveTab("timeAnalysis")}
+                className={cn(
+                  "flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900",
+                  activeTab === "timeAnalysis"
+                    ? "bg-white text-neutral-900 shadow-sm"
+                    : "text-neutral-300 hover:text-white hover:bg-white/10"
+                )}
+              >
+                <Clock className="w-3 h-3" />
+                Time
+              </button>
+              <button
+                role="tab"
+                aria-selected={activeTab === "insights"}
+                onClick={() => setActiveTab("insights")}
+                className={cn(
+                  "flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900",
+                  activeTab === "insights"
+                    ? "bg-white text-neutral-900 shadow-sm"
+                    : "text-neutral-300 hover:text-white hover:bg-white/10"
+                )}
+              >
+                <TrendingUp className="w-3 h-3" />
+                Insights
+              </button>
+              <button
+                role="tab"
+                aria-selected={activeTab === "moveHistory"}
+                onClick={() => setActiveTab("moveHistory")}
+                className={cn(
+                  "flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-2 sm:px-3 rounded-lg text-[11px] sm:text-xs font-medium transition-all whitespace-nowrap shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-900",
+                  activeTab === "moveHistory"
+                    ? "bg-white text-neutral-900 shadow-sm"
+                    : "text-neutral-300 hover:text-white hover:bg-white/10"
+                )}
+              >
+                <History className="w-3 h-3" />
+                Moves
+              </button>
+            </div>
           </div>
         </div>
 
