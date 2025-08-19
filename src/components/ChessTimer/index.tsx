@@ -316,7 +316,14 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "black" })}
             />
           </motion.div>
-          <MobileControls isRunning={isRunning} onTogglePause={isRunning ? pauseTimer : resumeTimer} onShowHelp={() => setShowGestureHelp(true)} onReset={handleReset} />
+          <MobileControls 
+            isRunning={isRunning} 
+            onTogglePause={isRunning ? pauseTimer : resumeTimer} 
+            onShowHelp={() => setShowGestureHelp(true)} 
+            onReset={handleReset}
+            animatedPosition={animationState.controlsPosition}
+            isMobile={isMobile}
+          />
           <motion.div 
             className={cn(
               "flex-1 md:flex-row flex items-center justify-center",
