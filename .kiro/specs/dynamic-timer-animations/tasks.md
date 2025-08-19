@@ -12,7 +12,12 @@
   - Write unit tests for height calculation logic with all player state combinations
   - _Requirements: 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 2. Add animation state management to ChessTimer component
+- [x] 2. Add animation state management to ChessTimer component
+
+
+
+
+
   - Add new state interface `AnimationState` to track square heights and controls position
   - Implement `useState` hook for animation state in ChessTimer component
   - Create `useEffect` hook that triggers animation state updates when `activePlayer` changes

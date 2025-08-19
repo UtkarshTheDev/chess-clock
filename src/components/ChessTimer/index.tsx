@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useTimerStore } from "../../stores/timerStore";
 import { useStatsStore } from "@/stores/statsStore";
 import { useTimerTypeStore } from "@/stores/timerTypeStore";
@@ -15,6 +15,7 @@ import ControlButton from "./ControlButton";
 import ConfirmationModal from "./ConfirmationModal";
 import { TimerSquare } from "./TimerSquare";
 import MobileControls from "./MobileControls";
+import { AnimationState, calculateHeights } from "@/utils/timerAnimations";
 
 interface ChessTimerProps {
   onReset?: () => void;
@@ -48,8 +49,54 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     player: null,
   });
 
+  // Animation state management
+  const [animationState, setAnimationState] = useState<AnimationState>(() => 
+    calculateHeights(null) // Initialize with default state
+  );
+  
+  // Debouncing ref for rapid state changes
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const { playMove, playCheck, playGameEnd, playGameStart } = useSoundEffects();
   const { currentPhase } = usePhaseTransition();
+
+  // Animation state update effect with debouncing
+  useEffect(() => {
+    // Clear any existing timeout to debounce rapid changes
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Set a new timeout to update animation state after a brief delay
+    debounceTimeoutRef.current = setTimeout(() => {
+      try {
+        const newAnimationState = calculateHeights(activePlayer);
+        setAnimationState(newAnimationState);
+        // Debug log for development (can be removed in production)
+        console.log('Animation state updated:', { activePlayer, newAnimationState });
+      } catch (error) {
+        console.warn('Animation state update error:', error);
+        // Fallback to immediate state change without animation
+        setAnimationState(calculateHeights(activePlayer));
+      }
+    }, 50); // 50ms debounce delay to handle rapid state changes
+
+    // Cleanup timeout on unmount or dependency change
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, [activePlayer]);
+
+  // Cleanup debounce timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleGameEnd = useCallback(
     (reason: "check" | "checkmate" | "draw" | "timeout") => {
