@@ -15,7 +15,7 @@ import ControlButton from "./ControlButton";
 import ConfirmationModal from "./ConfirmationModal";
 import { TimerSquare } from "./TimerSquare";
 import MobileControls from "./MobileControls";
-import { AnimationState, calculateHeights } from "@/utils/timerAnimations";
+import { AnimationState, calculateHeights, springTransition } from "@/utils/timerAnimations";
 
 interface ChessTimerProps {
   onReset?: () => void;
@@ -54,11 +54,30 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     calculateHeights(null) // Initialize with default state
   );
   
+  // Mobile breakpoint state for responsive animations
+  const [isMobile, setIsMobile] = useState(false);
+  
   // Debouncing ref for rapid state changes
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { playMove, playCheck, playGameEnd, playGameStart } = useSoundEffects();
   const { currentPhase } = usePhaseTransition();
+
+  // Handle responsive breakpoint detection for mobile animations
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint is 768px
+    };
+
+    // Check initial state
+    checkIsMobile();
+
+    // Add resize listener
+    window.addEventListener('resize', checkIsMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   // Animation state update effect with debouncing
   useEffect(() => {
@@ -266,7 +285,24 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
           </div>
         </div>
         <div className="md:flex max-lg:flex-col h-full w-full">
-          <div className={cn("flex-1 md:flex-row flex items-center justify-center", "cursor-pointer select-none md:h-full h-[40vh]", activePlayer === "black" ? "opacity-100" : "opacity-50")}>
+          <motion.div 
+            className={cn(
+              "flex-1 md:flex-row flex items-center justify-center",
+              "cursor-pointer select-none",
+              // Desktop: fixed full height, Mobile: animated height
+              "md:h-full",
+              activePlayer === "black" ? "opacity-100" : "opacity-50"
+            )}
+            // Only animate height on mobile (below md breakpoint)
+            animate={{
+              height: isMobile ? animationState.topSquareHeight : undefined
+            }}
+            transition={isMobile ? springTransition : undefined}
+            // Set initial height for mobile
+            style={{
+              height: !isMobile ? undefined : animationState.topSquareHeight
+            }}
+          >
             <TimerSquare
               player="black"
               time={blackTimeRemaining}
@@ -279,9 +315,26 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "black" })}
               onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "black" })}
             />
-          </div>
+          </motion.div>
           <MobileControls isRunning={isRunning} onTogglePause={isRunning ? pauseTimer : resumeTimer} onShowHelp={() => setShowGestureHelp(true)} onReset={handleReset} />
-          <div className={cn("flex-1 md:flex-row flex items-center justify-center", "cursor-pointer select-none md:h-full h-[40vh]", activePlayer === "white" ? "opacity-100" : "opacity-50")}>
+          <motion.div 
+            className={cn(
+              "flex-1 md:flex-row flex items-center justify-center",
+              "cursor-pointer select-none",
+              // Desktop: fixed full height, Mobile: animated height
+              "md:h-full",
+              activePlayer === "white" ? "opacity-100" : "opacity-50"
+            )}
+            // Only animate height on mobile (below md breakpoint)
+            animate={{
+              height: isMobile ? animationState.bottomSquareHeight : undefined
+            }}
+            transition={isMobile ? springTransition : undefined}
+            // Set initial height for mobile
+            style={{
+              height: !isMobile ? undefined : animationState.bottomSquareHeight
+            }}
+          >
             <TimerSquare
               player="white"
               time={whiteTimeRemaining}
@@ -294,7 +347,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "white" })}
               onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "white" })}
             />
-          </div>
+          </motion.div>
         </div>
         <AnimatePresence>
           {gestureNotification && (
