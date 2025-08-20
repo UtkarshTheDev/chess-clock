@@ -18,19 +18,21 @@ const ControlButton: React.FC<ControlButtonProps> = ({
     <motion.button
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-4 py-2 rounded-lg",
+        "flex items-center gap-3 px-6 py-3 rounded-xl", // Increased padding for larger touch area
         "backdrop-blur-md shadow-lg",
         "transition-all duration-300",
         "hover:scale-105 active:scale-95",
         "text-white",
-        "bg-neutral-800/50 hover:bg-neutral-700/50",
+        "bg-neutral-800/60 hover:bg-neutral-700/60", // Slightly more opaque
+        "border border-white/10", // Added border for better definition
+        "min-h-[48px] min-w-[48px]", // Minimum touch target size
         className
       )}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
     >
-      {icon}
-      {label && <span className="text-sm font-medium">{label}</span>}
+      <span className="text-lg">{icon}</span>
+      {label && <span className="text-base font-medium">{label}</span>}
     </motion.button>
   );
 };

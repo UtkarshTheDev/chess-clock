@@ -70,43 +70,90 @@ export const TimerSquare = ({
     return getPlayerBackground();
   };
 
+  // Gesture handling moved to useGestures to avoid duplicate event props
+
+  // Fallback gesture handlers for complex gestures
   const gestureHandlers = useGestures({
-    onSingleTap: (event: React.MouseEvent | React.TouchEvent) => {
-      if (event && event.target) {
-        const target = event.target as HTMLElement;
-        const isActionButton = target.closest('[data-action-button]') || target.closest('.action-button-container');
-        if (isActionButton) return;
-      }
-      onSingleTap(player);
-    },
     onTwoFingerTap: () => onTwoFingerTap(player),
     onLongPress: () => onLongPress(player),
-    onGestureStart: () => {
+    onGestureStart: (e) => {
       if (isActive && isRunning) setIsGestureActive(true);
     },
-    onGestureEnd: () => setIsGestureActive(false),
+    onGestureEnd: (e) => {
+      setIsGestureActive(false);
+    },
+    onSingleTap: (e) => {
+      // Ignore taps on action buttons
+      const target = e.target as HTMLElement;
+      const isActionButton = target.closest('[data-action-button]') || target.closest('.action-button-container');
+      if (!isActionButton) {
+        onSingleTap(player);
+      }
+    },
   });
 
   return (
     <motion.div
+      // Event handlers are routed via useGestures to avoid duplication
       {...gestureHandlers}
       className={cn(
-        "w-full max-w-[98%] md:max-h-[60vh] h-full",
-        "relative cursor-pointer rounded-2xl",
-        "transition-all duration-300",
+        "w-full h-full relative cursor-pointer rounded-2xl",
+        "transition-colors duration-300",
         getBackground(),
-        isActive && "scale-105 z-10",
-        isGestureActive && isActive && "scale-110 shadow-2xl",
+        isActive && "z-20",
+        isGestureActive && isActive && "shadow-2xl",
         isActive ? "border-4" : "border-2",
         getBorderColor(),
         isActive ? (player === "black" ? "ring-1 ring-gray-300/30" : "") : "",
         !isActive && player === "white" ? "ring-1 ring-gray-400/50" : "",
         isGestureActive && isActive ? "shadow-2xl" : "shadow-lg",
         "backdrop-blur-sm",
-        "sm:max-w-[90%] md:max-w-[90%] max-h-[45vh]"
+        // Responsive sizing with proper margins to prevent border cutoff
+        "mx-1 md:mx-2",
+        // Ensure proper height utilization and clickable area
+        "flex flex-col justify-center",
+        // Ensure inactive squares are visible above status indicators
+        !isActive && "z-10"
       )}
+      animate={{
+        opacity: isActive ? 1 : 0.9,
+        zIndex: isActive ? 20 : 10
+      }}
+      transition={{
+        type: "spring",
+        stiffness: 150,
+        damping: 20,
+        mass: 1.5,
+        duration: 1.0
+      }}
+      // Comprehensive click handling
+      style={{
+        minHeight: '100%',
+        width: '100%',
+        touchAction: 'manipulation',
+        WebkitTapHighlightColor: 'transparent',
+        userSelect: 'none',
+        position: 'relative',
+        zIndex: isActive ? 20 : 10,
+        // Ensure the entire area is interactive
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center'
+      }}
     >
-      <div className="flex flex-col items-center justify-center h-full pb-16 sm:pb-20">
+      <div
+        className={cn(
+          "flex flex-col items-center justify-center h-full w-full",
+          // Better padding for inactive state - more space for larger text
+          isActive ? "pb-16 sm:pb-20" : "pb-8 sm:pb-10",
+          // Ensure content doesn't block clicks but fills entire area
+          "pointer-events-none absolute inset-0"
+        )}
+        style={{
+          // Allow clicks to pass through to parent
+          pointerEvents: 'none'
+        }}
+      >
         {displayInfo && (displayInfo.delayTime !== undefined || displayInfo.pendingIncrement !== undefined || displayInfo.stageInfo) && (
           <div className="mb-2 text-center">
             {displayInfo.isInDelay && displayInfo.delayTime !== undefined && (
@@ -126,7 +173,11 @@ export const TimerSquare = ({
             )}
           </div>
         )}
-        <span className="font-unbounded text-8xl mt-12 sm:text-[7.5rem] lg:text-[9rem] font-bold leading-none select-none">
+        <span className={cn(
+          "font-unbounded font-bold leading-none select-none",
+          // Much larger text for inactive timers - better readability
+          isActive ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12" : "text-7xl sm:text-8xl lg:text-9xl mt-6"
+        )}>
           {formatTime(time)}
         </span>
       </div>
@@ -143,16 +194,25 @@ export const TimerSquare = ({
         )}
         initial={false}
         animate={{
-          opacity: isRunning ? (isActive ? 1 : 0.9) : 0.85,
-          scale: isRunning ? (isActive ? 1 : 0.99) : 0.99,
-          y: isRunning ? (isActive ? 0 : 2) : 2,
-          filter: isRunning ? "saturate(1)" : "saturate(0.95)",
+          opacity: isRunning && isActive ? 1 : 0, // Hide when not active
+          scale: isRunning && isActive ? 1 : 0.8,
+          y: isRunning && isActive ? 0 : 20,
+          filter: isRunning && isActive ? "saturate(1)" : "saturate(0.5)",
         }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
+        transition={{
+          duration: 0.3,
+          ease: "easeInOut",
+          opacity: { duration: 0.2 },
+          scale: { duration: 0.25 },
+          y: { duration: 0.25 }
+        }}
         data-action-button-container="true"
         onClick={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          pointerEvents: isRunning && isActive ? 'auto' : 'none'
+        }}
       >
         <ActionButton variant="check" onClick={(e) => { e?.preventDefault(); e?.stopPropagation(); if (isActive && isRunning) onCheck(); }} disabled={!isActive || !isRunning} icon={<Check className="w-5 h-5" />} label="Check" />
         <ActionButton variant="checkmate" onClick={(e) => { e?.preventDefault(); e?.stopPropagation(); if (isActive && isRunning) onCheckmate(); }} disabled={!isActive || !isRunning} icon={<Trophy className="w-5 h-5" />} label="Mate" />

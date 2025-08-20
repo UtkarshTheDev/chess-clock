@@ -83,8 +83,29 @@ const config: Config = {
       animation: {
         shine: 'shine 5s linear infinite',
       },
+      willChange: {
+        'transform': 'transform',
+        'auto': 'auto',
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    // Add custom utilities for performance optimization
+    function({ addUtilities }: { addUtilities: any }) {
+      const newUtilities = {
+        '.will-change-transform': {
+          'will-change': 'transform',
+        },
+        '.will-change-auto': {
+          'will-change': 'auto',
+        },
+        '.transform-gpu': {
+          'transform': 'translateZ(0)',
+        },
+      }
+      addUtilities(newUtilities)
+    }
+  ],
 };
 export default config;

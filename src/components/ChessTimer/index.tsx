@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTimerStore } from "../../stores/timerStore";
 import { useStatsStore } from "@/stores/statsStore";
 import { useTimerTypeStore } from "@/stores/timerTypeStore";
@@ -15,7 +15,12 @@ import ControlButton from "./ControlButton";
 import ConfirmationModal from "./ConfirmationModal";
 import { TimerSquare } from "./TimerSquare";
 import MobileControls from "./MobileControls";
-import { AnimationState, calculateHeights, springTransition } from "@/utils/timerAnimations";
+import { 
+  transformTransition, 
+  ANIMATION_CSS_CLASSES,
+  PerformanceMetrics 
+} from "@/utils/timerAnimations";
+import { useOptimizedAnimations } from "@/hooks/useOptimizedAnimations";
 
 interface ChessTimerProps {
   onReset?: () => void;
@@ -49,16 +54,24 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     player: null,
   });
 
-  // Animation state management
-  const [animationState, setAnimationState] = useState<AnimationState>(() => 
-    calculateHeights(null) // Initialize with default state
-  );
-  
   // Mobile breakpoint state for responsive animations
   const [isMobile, setIsMobile] = useState(false);
   
-  // Debouncing ref for rapid state changes
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Optimized animation state management with performance monitoring
+  const { 
+    animationState, 
+    performanceMetrics, 
+    shouldUseReducedMotion 
+  } = useOptimizedAnimations(activePlayer, {
+    enablePerformanceMonitoring: process.env.NODE_ENV === 'development',
+    onPerformanceUpdate: (metrics: PerformanceMetrics) => {
+      // Log performance issues in development
+      if (!metrics.isPerformant) {
+        console.warn('Timer animation performance below target:', metrics);
+      }
+    },
+    useTransformAnimations: true
+  });
 
   const { playMove, playCheck, playGameEnd, playGameStart } = useSoundEffects();
   const { currentPhase } = usePhaseTransition();
@@ -79,43 +92,12 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
     return () => window.removeEventListener('resize', checkIsMobile);
   }, []);
 
-  // Animation state update effect with debouncing
+  // Performance monitoring effect
   useEffect(() => {
-    // Clear any existing timeout to debounce rapid changes
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
+    if (performanceMetrics && process.env.NODE_ENV === 'development') {
+      console.log('Timer Animation Performance:', performanceMetrics);
     }
-
-    // Set a new timeout to update animation state after a brief delay
-    debounceTimeoutRef.current = setTimeout(() => {
-      try {
-        const newAnimationState = calculateHeights(activePlayer);
-        setAnimationState(newAnimationState);
-        // Debug log for development (can be removed in production)
-        console.log('Animation state updated:', { activePlayer, newAnimationState });
-      } catch (error) {
-        console.warn('Animation state update error:', error);
-        // Fallback to immediate state change without animation
-        setAnimationState(calculateHeights(activePlayer));
-      }
-    }, 50); // 50ms debounce delay to handle rapid state changes
-
-    // Cleanup timeout on unmount or dependency change
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, [activePlayer]);
-
-  // Cleanup debounce timeout on component unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [performanceMetrics]);
 
   const handleGameEnd = useCallback(
     (reason: "check" | "checkmate" | "draw" | "timeout") => {
@@ -265,18 +247,24 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   const phaseInfo = getPhaseInfo();
 
   return (
-    <motion.div className="h-full w-full md:h-[93vh]">
-      <div className="relative h-full flex flex-col">
-        <div className="absolute top-6 left-0 right-0 z-10 flex items-center justify-between px-6">
+    <motion.div className="h-screen w-full overflow-hidden">
+      <div className="relative h-full flex flex-col p-2">
+        {/* Desktop header controls - positioned to not interfere with timer squares */}
+        <div className="absolute top-4 left-0 right-0 z-5 flex items-center justify-between px-6">
           <div className="hidden md:block">
             <ControlButton onClick={handleReset} icon={<RefreshCcw />} label="Reset" />
           </div>
           <div className="flex-grow flex flex-col items-center gap-2">
-            <div className={cn("px-4 py-2 rounded-full text-sm font-medium shadow-md", "flex items-center gap-2", phaseInfo.gradient)}>
+            <div className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium shadow-lg", 
+              "flex items-center gap-2 z-5 relative", 
+              phaseInfo.gradient,
+              "border border-white/20 backdrop-blur-sm"
+            )}>
               <span className="text-white text-lg">{phaseInfo.icon}</span>
               <span className="text-white">{phaseInfo.label}</span>
             </div>
-            <div className="px-3 py-1 rounded-full bg-neutral-900/90 backdrop-blur-sm border border-neutral-700/50 shadow-lg">
+            <div className="px-3 py-1 rounded-full bg-neutral-900/90 backdrop-blur-sm border border-neutral-700/50 shadow-lg z-5 relative">
               <span className="text-neutral-100 text-xs font-semibold">{getDetailedDisplayName()}</span>
             </div>
           </div>
@@ -284,24 +272,46 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             <ControlButton onClick={isRunning ? pauseTimer : resumeTimer} icon={isRunning ? <Pause /> : <Play />} label={isRunning ? "Pause" : "Play"} />
           </div>
         </div>
-        <div className="md:flex max-lg:flex-col h-full w-full">
+        
+        {/* Main timer layout - full height utilization with proper spacing */}
+        <div className="flex flex-col md:flex-row flex-1 w-full gap-2">
+          {/* Black timer square - anchored at top, expands downward */}
           <motion.div 
             className={cn(
-              "flex-1 md:flex-row flex items-center justify-center",
-              "cursor-pointer select-none",
-              // Desktop: fixed full height, Mobile: animated height
-              "md:h-full",
-              activePlayer === "black" ? "opacity-100" : "opacity-50"
+              "flex items-center justify-center cursor-pointer select-none w-full",
+              // Desktop: fixed full height, Mobile: dynamic height based on state
+              "md:flex-1 md:h-full",
+              activePlayer === "black" ? "opacity-100" : "opacity-50",
+              // Add will-change for GPU acceleration on mobile
+              isMobile && !shouldUseReducedMotion && ANIMATION_CSS_CLASSES.willChangeTransform,
+              // Anchor at top for smooth expansion
+              "self-start"
             )}
-            // Only animate height on mobile (below md breakpoint)
-            animate={{
-              height: isMobile ? animationState.topSquareHeight : undefined
-            }}
-            transition={isMobile ? springTransition : undefined}
+            // Smooth height animations anchored from top
+            animate={isMobile ? {
+              height: animationState.topSquareHeight
+            } : undefined}
+            transition={isMobile ? {
+              type: "spring",
+              stiffness: 120,
+              damping: 25,
+              mass: 1.8,
+              duration: 1.8
+            } : undefined}
             // Set initial height for mobile
-            style={{
-              height: !isMobile ? undefined : animationState.topSquareHeight
-            }}
+            initial={isMobile ? {
+              height: animationState.topSquareHeight
+            } : undefined}
+            // Ensure proper height on mobile with smooth constraints
+            style={isMobile ? {
+              height: animationState.topSquareHeight,
+              // Keep clamps constant to avoid jerky two-step animation
+              minHeight: '150px',
+              maxHeight: '68vh',
+              // Anchor to top for natural expansion
+              alignSelf: 'flex-start',
+              transformOrigin: 'top center'
+            } : undefined}
           >
             <TimerSquare
               player="black"
@@ -316,31 +326,56 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "black" })}
             />
           </motion.div>
-          <MobileControls 
-            isRunning={isRunning} 
-            onTogglePause={isRunning ? pauseTimer : resumeTimer} 
-            onShowHelp={() => setShowGestureHelp(true)} 
-            onReset={handleReset}
-            animatedPosition={animationState.controlsPosition}
-            isMobile={isMobile}
-          />
+          
+          {/* Mobile controls - always visible and properly positioned with spacing */}
+          <div className="md:hidden flex-shrink-0 z-40 relative my-3">
+            <MobileControls 
+              isRunning={isRunning} 
+              onTogglePause={isRunning ? pauseTimer : resumeTimer} 
+              onShowHelp={() => setShowGestureHelp(true)} 
+              onReset={handleReset}
+              animatedPosition={animationState.controlsPosition}
+              isMobile={isMobile}
+            />
+          </div>
+          
+          {/* White timer square - anchored at bottom, expands upward */}
           <motion.div 
             className={cn(
-              "flex-1 md:flex-row flex items-center justify-center",
-              "cursor-pointer select-none",
-              // Desktop: fixed full height, Mobile: animated height
-              "md:h-full",
-              activePlayer === "white" ? "opacity-100" : "opacity-50"
+              "flex items-center justify-center cursor-pointer select-none w-full",
+              // Desktop: fixed full height, Mobile: dynamic height based on state
+              "md:flex-1 md:h-full",
+              activePlayer === "white" ? "opacity-100" : "opacity-50",
+              // Add will-change for GPU acceleration on mobile
+              isMobile && !shouldUseReducedMotion && ANIMATION_CSS_CLASSES.willChangeTransform,
+              // Anchor at bottom for smooth expansion
+              "self-end"
             )}
-            // Only animate height on mobile (below md breakpoint)
-            animate={{
-              height: isMobile ? animationState.bottomSquareHeight : undefined
-            }}
-            transition={isMobile ? springTransition : undefined}
+            // Smooth height animations anchored from bottom
+            animate={isMobile ? {
+              height: animationState.bottomSquareHeight
+            } : undefined}
+            transition={isMobile ? {
+              type: "spring",
+              stiffness: 120,
+              damping: 25,
+              mass: 1.8,
+              duration: 1.8
+            } : undefined}
             // Set initial height for mobile
-            style={{
-              height: !isMobile ? undefined : animationState.bottomSquareHeight
-            }}
+            initial={isMobile ? {
+              height: animationState.bottomSquareHeight
+            } : undefined}
+            // Ensure proper height on mobile with smooth constraints
+            style={isMobile ? {
+              height: animationState.bottomSquareHeight,
+              // Keep clamps constant to avoid jerky two-step animation
+              minHeight: '150px',
+              maxHeight: '68vh',
+              // Anchor to bottom for natural upward expansion
+              alignSelf: 'flex-end',
+              transformOrigin: 'bottom center'
+            } : undefined}
           >
             <TimerSquare
               player="white"
@@ -371,7 +406,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             </motion.div>
           )}
         </AnimatePresence>
-        <div className="hidden md:block absolute bottom-6 left-1/2 -translate-x-1/2">
+        <div className="hidden md:block absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
           <KeyboardShortcuts />
         </div>
         {showGestureHelp && <GestureHelpDialog isOpen={showGestureHelp} onClose={() => setShowGestureHelp(false)} />}

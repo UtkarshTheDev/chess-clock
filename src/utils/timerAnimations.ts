@@ -3,6 +3,11 @@
  * 
  * This module provides animation configuration constants and height calculation logic
  * for dynamic timer square animations in mobile view.
+ * 
+ * Performance optimizations:
+ * - Uses transform: scaleY() instead of height changes where possible
+ * - Includes will-change CSS properties for GPU acceleration
+ * - Provides performance monitoring utilities
  */
 
 // Animation configuration interface
@@ -23,13 +28,31 @@ export const ANIMATION_CONFIG: AnimationConfig = {
   mass: 0.8
 };
 
-// Spring transition configuration for Framer Motion
+// Optimized spring transition configuration for Framer Motion
 export const springTransition = {
   type: "spring" as const,
   stiffness: ANIMATION_CONFIG.stiffness,
   damping: ANIMATION_CONFIG.damping,
   mass: ANIMATION_CONFIG.mass,
   duration: ANIMATION_CONFIG.duration
+};
+
+// Performance-optimized transition using transform instead of layout properties
+export const transformTransition = {
+  type: "spring" as const,
+  stiffness: 200, // Reduced for smoother motion
+  damping: 25, // Increased for less bounce
+  mass: 1.2, // Increased for more fluid motion
+  duration: 1.2 // Slower for premium feel
+};
+
+// Ultra-smooth transition for height animations
+export const heightTransition = {
+  type: "spring" as const,
+  stiffness: 150, // Even smoother
+  damping: 30, // Well-damped
+  mass: 1.5, // Heavier feel
+  duration: 1.5 // Slower, more luxurious
 };
 
 // Animation state interface
@@ -39,14 +62,16 @@ export interface AnimationState {
   controlsPosition: 'center' | 'top' | 'bottom';
 }
 
-// Height calculation constants
-const BASE_HEIGHT = 90; // 90vh total, 10vh reserved for margins
-const DEFAULT_HEIGHT_RATIO = 0.4; // 40% for each square in default state
-const ACTIVE_HEIGHT_RATIO = 0.7; // 70% for active player square
-const INACTIVE_HEIGHT_RATIO = 0.2; // 20% for inactive player square
+// Height calculation constants - balanced for readability and prominence with proper spacing
+const BASE_HEIGHT = 96; // Slightly reduced to account for container padding
+const DEFAULT_HEIGHT_RATIO = 0.46; // 46% for each square in default state
+const ACTIVE_HEIGHT_RATIO = 0.68; // 68% for active player square (prominent but not overwhelming)
+const INACTIVE_HEIGHT_RATIO = 0.22; // 22% for inactive player square (readable and visible)
+const CONTROLS_HEIGHT = 0.10; // 10% reserved for controls spacing and margins
 
 /**
  * Calculates height values and controls position based on active player state
+ * Optimized for better space utilization and proper positioning
  * 
  * @param activePlayer - The currently active player ('white', 'black', or null)
  * @returns AnimationState object with height values and controls position
@@ -57,42 +82,168 @@ export const calculateHeights = (activePlayer: 'white' | 'black' | null): Animat
     return `${Math.round(BASE_HEIGHT * ratio)}vh`;
   };
 
-  // Default state: both squares at 40% height, controls centered
+  // Default state: both squares at 46% height, controls centered
   if (!activePlayer) {
     return {
-      topSquareHeight: formatHeight(DEFAULT_HEIGHT_RATIO), // 36vh
-      bottomSquareHeight: formatHeight(DEFAULT_HEIGHT_RATIO), // 36vh
+      topSquareHeight: formatHeight(DEFAULT_HEIGHT_RATIO), // 44vh
+      bottomSquareHeight: formatHeight(DEFAULT_HEIGHT_RATIO), // 44vh
       controlsPosition: 'center'
     };
   }
   
-  // Top player (black) active: top square 70%, bottom square 20%
+  // Top player (black) active: prominent but balanced
   if (activePlayer === 'black') {
     return {
-      topSquareHeight: formatHeight(ACTIVE_HEIGHT_RATIO), // 63vh
-      bottomSquareHeight: formatHeight(INACTIVE_HEIGHT_RATIO), // 18vh
+      topSquareHeight: formatHeight(ACTIVE_HEIGHT_RATIO), // 65vh
+      bottomSquareHeight: formatHeight(INACTIVE_HEIGHT_RATIO), // 21vh
       controlsPosition: 'bottom'
     };
   }
   
-  // Bottom player (white) active: top square 20%, bottom square 70%
+  // Bottom player (white) active: prominent but balanced
   return {
-    topSquareHeight: formatHeight(INACTIVE_HEIGHT_RATIO), // 18vh
-    bottomSquareHeight: formatHeight(ACTIVE_HEIGHT_RATIO), // 63vh
+    topSquareHeight: formatHeight(INACTIVE_HEIGHT_RATIO), // 21vh
+    bottomSquareHeight: formatHeight(ACTIVE_HEIGHT_RATIO), // 65vh
     controlsPosition: 'top'
   };
 };
 
-// Height variants for Framer Motion
+// Height variants for Framer Motion (legacy - use transform variants for better performance)
 export const heightVariants = {
   default: { height: `${Math.round(BASE_HEIGHT * DEFAULT_HEIGHT_RATIO)}vh` },
   active: { height: `${Math.round(BASE_HEIGHT * ACTIVE_HEIGHT_RATIO)}vh` },
   inactive: { height: `${Math.round(BASE_HEIGHT * INACTIVE_HEIGHT_RATIO)}vh` }
 };
 
-// Position variants for mobile controls
-export const positionVariants = {
-  center: { y: 0, opacity: 1 },
-  top: { y: -20, opacity: 1 },
-  bottom: { y: 20, opacity: 1 }
+// Performance-optimized transform variants using scaleY instead of height changes
+export const transformVariants = {
+  default: { 
+    scaleY: 1, 
+    transformOrigin: "center",
+    willChange: "transform"
+  },
+  active: { 
+    scaleY: ACTIVE_HEIGHT_RATIO / DEFAULT_HEIGHT_RATIO, // 1.49 (70% / 47%)
+    transformOrigin: "center",
+    willChange: "transform"
+  },
+  inactive: { 
+    scaleY: INACTIVE_HEIGHT_RATIO / DEFAULT_HEIGHT_RATIO, // 0.49 (23% / 47%)
+    transformOrigin: "center",
+    willChange: "transform"
+  }
 };
+
+// Position variants for mobile controls with performance optimizations and better spacing
+export const positionVariants = {
+  center: { 
+    y: 0, 
+    opacity: 1,
+    willChange: "transform, opacity"
+  },
+  top: { 
+    y: -30, // Increased spacing from timer squares
+    opacity: 1,
+    willChange: "transform, opacity"
+  },
+  bottom: { 
+    y: 30, // Increased spacing from timer squares
+    opacity: 1,
+    willChange: "transform, opacity"
+  }
+};
+
+// Performance monitoring utilities
+export interface PerformanceMetrics {
+  frameRate: number;
+  animationDuration: number;
+  droppedFrames: number;
+  isPerformant: boolean;
+}
+
+class PerformanceMonitor {
+  private frameCount = 0;
+  private lastTime = 0;
+  private animationStartTime = 0;
+  private targetFrameRate = 60;
+  private frameRateThreshold = 55; // Consider performant if above 55fps
+  private isMonitoring = false;
+  private animationFrameId: number | null = null;
+
+  startMonitoring(): void {
+    if (this.isMonitoring) return;
+    
+    this.isMonitoring = true;
+    this.frameCount = 0;
+    this.lastTime = performance.now();
+    this.animationStartTime = this.lastTime;
+    
+    const measureFrame = (currentTime: number) => {
+      if (!this.isMonitoring) return;
+      
+      this.frameCount++;
+      
+      // Continue monitoring
+      this.animationFrameId = requestAnimationFrame(measureFrame);
+    };
+    
+    this.animationFrameId = requestAnimationFrame(measureFrame);
+  }
+
+  stopMonitoring(): PerformanceMetrics {
+    this.isMonitoring = false;
+    
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    
+    const endTime = performance.now();
+    const duration = (endTime - this.animationStartTime) / 1000; // Convert to seconds
+    const frameRate = this.frameCount / duration;
+    const expectedFrames = duration * this.targetFrameRate;
+    const droppedFrames = Math.max(0, expectedFrames - this.frameCount);
+    
+    const metrics: PerformanceMetrics = {
+      frameRate: Math.round(frameRate),
+      animationDuration: Math.round(duration * 1000), // Convert back to ms
+      droppedFrames: Math.round(droppedFrames),
+      isPerformant: frameRate >= this.frameRateThreshold
+    };
+    
+    // Log performance metrics in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Animation Performance Metrics:', metrics);
+      
+      if (!metrics.isPerformant) {
+        console.warn(`Animation performance below target: ${metrics.frameRate}fps (target: ${this.targetFrameRate}fps)`);
+      }
+    }
+    
+    return metrics;
+  }
+
+  reset(): void {
+    this.stopMonitoring();
+    this.frameCount = 0;
+    this.lastTime = 0;
+    this.animationStartTime = 0;
+  }
+}
+
+// Global performance monitor instance
+export const performanceMonitor = new PerformanceMonitor();
+
+// Utility function to check if reduced motion is preferred
+export const prefersReducedMotion = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+};
+
+// CSS class names for will-change optimization
+export const ANIMATION_CSS_CLASSES = {
+  willChangeTransform: 'will-change-transform',
+  willChangeAuto: 'will-change-auto',
+  gpuAccelerated: 'transform-gpu'
+} as const;
