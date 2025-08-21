@@ -241,6 +241,82 @@ export const prefersReducedMotion = (): boolean => {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 };
 
+// Entrance animation variants for initial load
+// Designed to be subtle, premium, and performant using transforms and blur only
+export const entranceContainer = {
+  hidden: {},
+  show: {
+    transition: {
+      when: 'beforeChildren',
+      staggerChildren: 0.08,
+      delayChildren: 0.06,
+    }
+  }
+};
+
+// Timer card entrance with directional hint
+// Use with `custom` set to 'up' | 'down' | 'none'
+export const timerEntranceVariants = {
+  hidden: (dir: 'up' | 'down' | 'none' = 'none') => ({
+    y: dir === 'up' ? 12 : dir === 'down' ? -12 : 0,
+    opacity: 0,
+    scale: 0.985,
+    filter: 'blur(6px)'
+  }),
+  show: {
+    y: 0,
+    opacity: 1,
+    scale: 1,
+    filter: 'blur(0px)',
+    transition: transformTransition
+  }
+};
+
+// Controls entrance variants
+export const controlsEntranceDesktop = {
+  hidden: { x: 16, opacity: 0, filter: 'blur(4px)' },
+  show: {
+    x: 0,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: transformTransition
+  }
+};
+
+export const controlsEntranceMobile = {
+  hidden: { y: 16, opacity: 0, filter: 'blur(4px)' },
+  show: {
+    y: 0,
+    opacity: 1,
+    filter: 'blur(0px)',
+    transition: transformTransition
+  }
+};
+
+// Staggered entrance for individual control buttons
+export const controlsButtonsContainer = {
+  hidden: {
+    opacity: 0,
+    y: 6,
+    filter: 'blur(2px)'
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: {
+      when: 'beforeChildren',
+      staggerChildren: 0.06,
+      delayChildren: 0.08
+    }
+  }
+};
+
+export const controlButtonVariant = {
+  hidden: { y: 10, opacity: 0, scale: 0.95, filter: 'blur(2px)' },
+  show: { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)', transition: transformTransition }
+};
+
 // CSS class names for will-change optimization
 export const ANIMATION_CSS_CLASSES = {
   willChangeTransform: 'will-change-transform',

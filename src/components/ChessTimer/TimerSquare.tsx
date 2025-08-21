@@ -97,12 +97,13 @@ export const TimerSquare = ({
       // Event handlers are routed via useGestures to avoid duplication
       {...gestureHandlers}
       className={cn(
-        "w-full h-full relative cursor-pointer rounded-2xl",
+        "w-full h-full relative cursor-pointer rounded-2xl overflow-visible",
         "transition-colors duration-300",
         getBackground(),
         isActive && "z-20",
         isGestureActive && isActive && "shadow-2xl",
-        isActive ? "border-4" : "border-2",
+        // Keep thicker border on mobile active state, unify to 2px on desktop for both
+        isActive ? "border-4 md:border-2" : "border-2 md:border-2",
         getBorderColor(),
         isActive ? (player === "black" ? "ring-1 ring-gray-300/30" : "") : "",
         !isActive && player === "white" ? "ring-1 ring-gray-400/50" : "",
@@ -183,7 +184,7 @@ export const TimerSquare = ({
       </div>
       <motion.div
         className={cn(
-          "absolute inset-x-0 bottom-4 w-fit mx-auto z-20 action-button-container",
+          "absolute inset-x-0 w-fit mx-auto z-40 action-button-container",
           "flex flex-nowrap items-center",
           "gap-2 sm:gap-3 px-2.5 py-2 sm:px-3 sm:py-2.5",
           "rounded-2xl border",
@@ -194,7 +195,7 @@ export const TimerSquare = ({
         )}
         initial={false}
         animate={{
-          opacity: isRunning && isActive ? 1 : 0, // Hide when not active
+          opacity: isRunning && isActive ? 1 : 0,
           scale: isRunning && isActive ? 1 : 0.8,
           y: isRunning && isActive ? 0 : 20,
           filter: isRunning && isActive ? "saturate(1)" : "saturate(0.5)",
@@ -211,7 +212,10 @@ export const TimerSquare = ({
         onTouchStart={(e) => e.stopPropagation()}
         onMouseDown={(e) => e.stopPropagation()}
         style={{
-          pointerEvents: isRunning && isActive ? 'auto' : 'none'
+          // Keep disabled interactions when inactive/not running across both mobile and desktop
+          pointerEvents: isRunning && isActive ? 'auto' : 'none',
+          // Keep clear of rounded corners and device safe areas (especially when white is active at bottom)
+          bottom: 'max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))'
         }}
       >
         <ActionButton variant="check" onClick={(e) => { e?.preventDefault(); e?.stopPropagation(); if (isActive && isRunning) onCheck(); }} disabled={!isActive || !isRunning} icon={<Check className="w-5 h-5" />} label="Check" />

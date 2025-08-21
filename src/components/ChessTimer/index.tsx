@@ -16,9 +16,14 @@ import ConfirmationModal from "./ConfirmationModal";
 import { TimerSquare } from "./TimerSquare";
 import MobileControls from "./MobileControls";
 import { 
-  transformTransition, 
   ANIMATION_CSS_CLASSES,
-  PerformanceMetrics 
+  PerformanceMetrics,
+  entranceContainer,
+  timerEntranceVariants,
+  controlsEntranceDesktop,
+  controlsEntranceMobile,
+  controlsButtonsContainer,
+  controlButtonVariant
 } from "@/utils/timerAnimations";
 import { useOptimizedAnimations } from "@/hooks/useOptimizedAnimations";
 
@@ -247,88 +252,102 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
   const phaseInfo = getPhaseInfo();
 
   return (
-    <motion.div className="h-screen w-full overflow-hidden">
-      <div className="relative h-full flex flex-col p-2">
+    <motion.div 
+      className="h-screen w-full overflow-hidden"
+      variants={!shouldUseReducedMotion ? entranceContainer : undefined}
+      initial={!shouldUseReducedMotion ? "hidden" : undefined}
+      animate={!shouldUseReducedMotion ? "show" : undefined}
+    >
+      <div className="relative h-full flex flex-col p-2 pt-20 md:pt-12 pb-8 md:pb-12">
         {/* Desktop header controls - positioned to not interfere with timer squares */}
-        <div className="absolute top-4 left-0 right-0 z-5 flex items-center justify-between px-6">
-          <div className="hidden md:block">
+        <motion.div 
+          className="absolute top-4 left-0 right-0 z-30 flex items-center justify-between px-6"
+          variants={!shouldUseReducedMotion ? controlsEntranceDesktop : undefined}
+          initial={!shouldUseReducedMotion ? "hidden" : undefined}
+          animate={!shouldUseReducedMotion ? "show" : undefined}
+        >
+          <motion.div className="hidden md:block" variants={!shouldUseReducedMotion ? controlButtonVariant : undefined}>
             <ControlButton onClick={handleReset} icon={<RefreshCcw />} label="Reset" />
-          </div>
-          <div className="flex-grow flex flex-col items-center gap-2">
-            <div className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium shadow-lg", 
-              "flex items-center gap-2 z-5 relative", 
+          </motion.div>
+          <motion.div className="flex-grow flex flex-col items-center gap-2" variants={!shouldUseReducedMotion ? controlsButtonsContainer : undefined}>
+            <motion.div variants={!shouldUseReducedMotion ? controlButtonVariant : undefined} className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium shadow-lg",
+              "flex items-center gap-2 z-30 relative",
               phaseInfo.gradient,
               "border border-white/20 backdrop-blur-sm"
             )}>
               <span className="text-white text-lg">{phaseInfo.icon}</span>
               <span className="text-white">{phaseInfo.label}</span>
-            </div>
-            <div className="px-3 py-1 rounded-full bg-neutral-900/90 backdrop-blur-sm border border-neutral-700/50 shadow-lg z-5 relative">
+            </motion.div>
+            <motion.div variants={!shouldUseReducedMotion ? controlButtonVariant : undefined} className="px-3 py-1 rounded-full bg-neutral-900/90 backdrop-blur-sm border border-neutral-700/50 shadow-lg z-30 relative">
               <span className="text-neutral-100 text-xs font-semibold">{getDetailedDisplayName()}</span>
-            </div>
-          </div>
-          <div className="hidden md:block">
+            </motion.div>
+          </motion.div>
+          <motion.div className="hidden md:block" variants={!shouldUseReducedMotion ? controlButtonVariant : undefined}>
             <ControlButton onClick={isRunning ? pauseTimer : resumeTimer} icon={isRunning ? <Pause /> : <Play />} label={isRunning ? "Pause" : "Play"} />
-          </div>
-        </div>
-        
-        {/* Main timer layout - full height utilization with proper spacing */}
-        <div className="flex flex-col md:flex-row flex-1 w-full gap-2">
+          </motion.div>
+        </motion.div>
+
+        {/* Main timer layout - constrained height on desktop to avoid overlaps */}
+        <div className="flex flex-col md:flex-row flex-1 w-full gap-4 md:gap-6 lg:gap-10 items-stretch md:items-center md:justify-center max-h-full md:px-6 md:py-0">
           {/* Black timer square - anchored at top, expands downward */}
           <motion.div 
             className={cn(
               "flex items-center justify-center cursor-pointer select-none w-full",
-              // Desktop: fixed full height, Mobile: dynamic height based on state
-              "md:flex-1 md:h-full",
+              "md:basis-[49%] md:max-w-[49%] md:h-full md:max-h-[calc(100vh-12rem)] md:mx-auto",
               activePlayer === "black" ? "opacity-100" : "opacity-50",
-              // Add will-change for GPU acceleration on mobile
               isMobile && !shouldUseReducedMotion && ANIMATION_CSS_CLASSES.willChangeTransform,
-              // Anchor at top for smooth expansion
               "self-start"
             )}
-            // Smooth height animations anchored from top
-            animate={isMobile ? {
-              height: animationState.topSquareHeight
-            } : undefined}
-            transition={isMobile ? {
-              type: "spring",
-              stiffness: 120,
-              damping: 25,
-              mass: 1.8,
-              duration: 1.8
-            } : undefined}
-            // Set initial height for mobile
-            initial={isMobile ? {
-              height: animationState.topSquareHeight
-            } : undefined}
-            // Ensure proper height on mobile with smooth constraints
-            style={isMobile ? {
-              height: animationState.topSquareHeight,
-              // Keep clamps constant to avoid jerky two-step animation
-              minHeight: '150px',
-              maxHeight: '68vh',
-              // Anchor to top for natural expansion
-              alignSelf: 'flex-start',
-              transformOrigin: 'top center'
-            } : undefined}
+            variants={!shouldUseReducedMotion ? timerEntranceVariants : undefined}
+            custom="down"
           >
-            <TimerSquare
-              player="black"
-              time={blackTimeRemaining}
-              isActive={activePlayer === "black"}
-              isRunning={isRunning}
-              onSingleTap={handleSingleTap}
-              onTwoFingerTap={handleTwoFingerTap}
-              onLongPress={handleLongPress}
-              onCheck={handleCheck}
-              onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "black" })}
-              onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "black" })}
-            />
+            {/* Inner wrapper handles mobile height animation only to avoid conflicts with entrance variants */}
+            <motion.div
+              className="w-full h-full"
+              animate={isMobile ? {
+                height: animationState.topSquareHeight
+              } : undefined}
+              transition={isMobile ? {
+                type: "spring",
+                stiffness: 120,
+                damping: 25,
+                mass: 1.8,
+                duration: 1.8
+              } : undefined}
+              initial={isMobile ? {
+                height: animationState.topSquareHeight
+              } : undefined}
+              style={isMobile ? {
+                height: animationState.topSquareHeight,
+                minHeight: '150px',
+                maxHeight: '58vh',
+                alignSelf: 'flex-start',
+                transformOrigin: 'top center'
+              } : undefined}
+            >
+              <TimerSquare
+                player="black"
+                time={blackTimeRemaining}
+                isActive={activePlayer === "black"}
+                isRunning={isRunning}
+                onSingleTap={handleSingleTap}
+                onTwoFingerTap={handleTwoFingerTap}
+                onLongPress={handleLongPress}
+                onCheck={handleCheck}
+                onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "black" })}
+                onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "black" })}
+              />
+            </motion.div>
           </motion.div>
-          
-          {/* Mobile controls - always visible and properly positioned with spacing */}
-          <div className="md:hidden flex-shrink-0 z-40 relative my-3">
+
+          {/* Mobile controls */}
+          <motion.div 
+            className="md:hidden"
+            variants={!shouldUseReducedMotion ? controlsEntranceMobile : undefined}
+            initial={!shouldUseReducedMotion ? "hidden" : undefined}
+            animate={!shouldUseReducedMotion ? "show" : undefined}
+          >
             <MobileControls 
               isRunning={isRunning} 
               onTogglePause={isRunning ? pauseTimer : resumeTimer} 
@@ -337,58 +356,58 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               animatedPosition={animationState.controlsPosition}
               isMobile={isMobile}
             />
-          </div>
-          
+          </motion.div>
+
           {/* White timer square - anchored at bottom, expands upward */}
           <motion.div 
             className={cn(
               "flex items-center justify-center cursor-pointer select-none w-full",
-              // Desktop: fixed full height, Mobile: dynamic height based on state
-              "md:flex-1 md:h-full",
+              "md:basis-[49%] md:max-w-[49%] md:h-full md:max-h-[calc(100vh-12rem)] md:mx-auto",
               activePlayer === "white" ? "opacity-100" : "opacity-50",
-              // Add will-change for GPU acceleration on mobile
               isMobile && !shouldUseReducedMotion && ANIMATION_CSS_CLASSES.willChangeTransform,
-              // Anchor at bottom for smooth expansion
-              "self-end"
+              "self-start",
+              isMobile && "mb-10"
             )}
-            // Smooth height animations anchored from bottom
-            animate={isMobile ? {
-              height: animationState.bottomSquareHeight
-            } : undefined}
-            transition={isMobile ? {
-              type: "spring",
-              stiffness: 120,
-              damping: 25,
-              mass: 1.8,
-              duration: 1.8
-            } : undefined}
-            // Set initial height for mobile
-            initial={isMobile ? {
-              height: animationState.bottomSquareHeight
-            } : undefined}
-            // Ensure proper height on mobile with smooth constraints
-            style={isMobile ? {
-              height: animationState.bottomSquareHeight,
-              // Keep clamps constant to avoid jerky two-step animation
-              minHeight: '150px',
-              maxHeight: '68vh',
-              // Anchor to bottom for natural upward expansion
-              alignSelf: 'flex-end',
-              transformOrigin: 'bottom center'
-            } : undefined}
+            variants={!shouldUseReducedMotion ? timerEntranceVariants : undefined}
+            custom="up"
           >
-            <TimerSquare
-              player="white"
-              time={whiteTimeRemaining}
-              isActive={activePlayer === "white"}
-              isRunning={isRunning}
-              onSingleTap={handleSingleTap}
-              onTwoFingerTap={handleTwoFingerTap}
-              onLongPress={handleLongPress}
-              onCheck={handleCheck}
-              onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "white" })}
-              onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "white" })}
-            />
+            {/* Inner wrapper handles mobile height animation only to avoid conflicts with entrance variants */}
+            <motion.div
+              className="w-full h-full"
+              animate={isMobile ? {
+                height: animationState.bottomSquareHeight
+              } : undefined}
+              transition={isMobile ? {
+                type: "spring",
+                stiffness: 120,
+                damping: 25,
+                mass: 1.8,
+                duration: 1.8
+              } : undefined}
+              initial={isMobile ? {
+                height: animationState.bottomSquareHeight
+              } : undefined}
+              style={isMobile ? {
+                height: animationState.bottomSquareHeight,
+                minHeight: '150px',
+                maxHeight: '58vh',
+                alignSelf: 'flex-end',
+                transformOrigin: 'bottom center'
+              } : undefined}
+            >
+              <TimerSquare
+                player="white"
+                time={whiteTimeRemaining}
+                isActive={activePlayer === "white"}
+                isRunning={isRunning}
+                onSingleTap={handleSingleTap}
+                onTwoFingerTap={handleTwoFingerTap}
+                onLongPress={handleLongPress}
+                onCheck={handleCheck}
+                onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "white" })}
+                onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "white" })}
+              />
+            </motion.div>
           </motion.div>
         </div>
         <AnimatePresence>
@@ -406,7 +425,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
             </motion.div>
           )}
         </AnimatePresence>
-        <div className="hidden md:block absolute bottom-2 left-1/2 -translate-x-1/2 z-10">
+        <div className="hidden md:block fixed bottom-3 left-1/2 -translate-x-1/2 z-10">
           <KeyboardShortcuts />
         </div>
         {showGestureHelp && <GestureHelpDialog isOpen={showGestureHelp} onClose={() => setShowGestureHelp(false)} />}

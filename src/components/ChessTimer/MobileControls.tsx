@@ -2,10 +2,10 @@ import { motion } from "framer-motion";
 import ControlButton from "./ControlButton";
 import { Play, Pause, HelpCircle, RefreshCcw } from "lucide-react";
 import { 
-  positionVariants, 
-  transformTransition, 
   ANIMATION_CSS_CLASSES,
-  prefersReducedMotion 
+  prefersReducedMotion,
+  controlsButtonsContainer,
+  controlButtonVariant 
 } from "@/utils/timerAnimations";
 
 interface MobileControlsProps {
@@ -29,7 +29,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
   
   return (
     <motion.div 
-      className={`flex items-center gap-6 px-6 py-4 justify-center bg-black/30 backdrop-blur-md rounded-2xl mx-6 ${
+      className={`px-6 py-4 bg-black/30 backdrop-blur-md rounded-2xl mx-6 ${
         isMobile && !shouldUseReducedMotion ? ANIMATION_CSS_CLASSES.willChangeTransform : ''
       } shadow-lg border border-white/10`}
       // Ultra-smooth positioning animation
@@ -57,15 +57,29 @@ const MobileControls: React.FC<MobileControlsProps> = ({
         transition: 'none'
       } : undefined}
     >
-      <ControlButton
-        onClick={onTogglePause}
-        icon={isRunning ? <Pause /> : <Play />}
-      />
-      <ControlButton
-        onClick={onShowHelp}
-        icon={<HelpCircle />}
-      />
-      <ControlButton onClick={onReset} icon={<RefreshCcw />} />
+      {/* Buttons row with staggered entrance */}
+      <motion.div 
+        className="flex items-center justify-center gap-6"
+        variants={!shouldUseReducedMotion ? controlsButtonsContainer : undefined}
+        initial={!shouldUseReducedMotion ? 'hidden' : undefined}
+        animate={!shouldUseReducedMotion ? 'show' : undefined}
+      >
+        <motion.div variants={!shouldUseReducedMotion ? controlButtonVariant : undefined}>
+          <ControlButton
+            onClick={onTogglePause}
+            icon={isRunning ? <Pause /> : <Play />}
+          />
+        </motion.div>
+        <motion.div variants={!shouldUseReducedMotion ? controlButtonVariant : undefined}>
+          <ControlButton
+            onClick={onShowHelp}
+            icon={<HelpCircle />}
+          />
+        </motion.div>
+        <motion.div variants={!shouldUseReducedMotion ? controlButtonVariant : undefined}>
+          <ControlButton onClick={onReset} icon={<RefreshCcw />} />
+        </motion.div>
+      </motion.div>
     </motion.div>
   );
 };
