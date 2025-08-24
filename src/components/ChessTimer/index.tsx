@@ -23,7 +23,8 @@ import {
   controlsEntranceDesktop,
   controlsEntranceMobile,
   controlsButtonsContainer,
-  controlButtonVariant
+  controlButtonVariant,
+  ambientBackgroundVariant
 } from "@/utils/timerAnimations";
 import { useOptimizedAnimations } from "@/hooks/useOptimizedAnimations";
 
@@ -289,7 +290,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         </motion.div>
 
         {/* Main timer layout - constrained height on desktop to avoid overlaps */}
-        <div className="flex flex-col md:flex-row flex-1 w-full gap-4 md:gap-6 lg:gap-10 items-stretch md:items-center md:justify-center max-h-full md:px-6 md:py-0 md:mt-[0rem]">
+        <div className="flex flex-col md:flex-row flex-1 w-full gap-4 md:gap-6 lg:gap-10 items-stretch md:items-center md:justify-center max-h-full md:px-6 md:py-0 md:mt-[3rem]">
           {/* Black timer square - anchored at top, expands downward */}
           <motion.div 
             className={cn(

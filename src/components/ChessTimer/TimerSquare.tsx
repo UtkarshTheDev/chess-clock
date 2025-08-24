@@ -6,6 +6,7 @@ import useGestures from "@/hooks/useGestures";
 import { ActionButton } from "../ui/ActionButton";
 import { Check, Trophy, Handshake } from "lucide-react";
 import { formatTime } from "./formatTime";
+import { timerTextVariant } from "@/utils/timerAnimations";
 
 interface TimerSquareProps {
   player: "white" | "black";
@@ -174,13 +175,18 @@ export const TimerSquare = ({
             )}
           </div>
         )}
-        <span className={cn(
-          "font-unbounded font-bold leading-none select-none",
-          // Much larger text for inactive timers - better readability
-          isActive ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12" : "text-7xl sm:text-8xl lg:text-9xl mt-6"
-        )}>
+        <motion.span
+          className={cn(
+            "font-unbounded font-bold leading-none select-none",
+            // Much larger text for inactive timers - better readability
+            isActive ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12" : "text-7xl sm:text-8xl lg:text-9xl mt-6"
+          )}
+          variants={timerTextVariant}
+          initial="hidden"
+          animate="show"
+        >
           {formatTime(time)}
-        </span>
+        </motion.span>
       </div>
       <motion.div
         className={cn(

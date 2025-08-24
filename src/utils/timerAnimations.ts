@@ -248,8 +248,9 @@ export const entranceContainer = {
   show: {
     transition: {
       when: 'beforeChildren',
-      staggerChildren: 0.08,
-      delayChildren: 0.06,
+      // Slightly increased stagger for premium pacing
+      staggerChildren: 0.09,
+      delayChildren: 0.04,
     }
   }
 };
@@ -261,35 +262,51 @@ export const timerEntranceVariants = {
     y: dir === 'up' ? 12 : dir === 'down' ? -12 : 0,
     opacity: 0,
     scale: 0.985,
-    filter: 'blur(6px)'
+    willChange: 'transform, opacity'
   }),
-  show: {
+  show: (dir: 'up' | 'down' | 'none' = 'none') => ({
     y: 0,
     opacity: 1,
-    scale: 1,
-    filter: 'blur(0px)',
-    transition: transformTransition
-  }
+    // Tiny overshoot only using transform (GPU-friendly)
+    scale: [0.995, 1.01, 1],
+    willChange: 'transform, opacity',
+    transition: {
+      type: 'spring',
+      stiffness: 220,
+      damping: 26,
+      mass: 1.0,
+      duration: 0.9,
+      // Subtle delay to keep white following top slightly
+      delay: dir === 'up' ? 0.12 : 0
+    }
+  })
 };
 
 // Controls entrance variants
 export const controlsEntranceDesktop = {
-  hidden: { x: 16, opacity: 0, filter: 'blur(4px)' },
+  hidden: { x: 16, opacity: 0 },
   show: {
     x: 0,
     opacity: 1,
-    filter: 'blur(0px)',
-    transition: transformTransition
+    // Brief ready pulse on arrival
+    scale: [1, 1.01, 1],
+    transition: {
+      ...transformTransition,
+      scale: { duration: 0.5, ease: 'easeOut' }
+    }
   }
 };
 
 export const controlsEntranceMobile = {
-  hidden: { y: 16, opacity: 0, filter: 'blur(4px)' },
+  hidden: { y: 16, opacity: 0 },
   show: {
     y: 0,
     opacity: 1,
-    filter: 'blur(0px)',
-    transition: transformTransition
+    scale: [1, 1.01, 1],
+    transition: {
+      ...transformTransition,
+      scale: { duration: 0.5, ease: 'easeOut' }
+    }
   }
 };
 
@@ -297,13 +314,11 @@ export const controlsEntranceMobile = {
 export const controlsButtonsContainer = {
   hidden: {
     opacity: 0,
-    y: 6,
-    filter: 'blur(2px)'
+    y: 6
   },
   show: {
     opacity: 1,
     y: 0,
-    filter: 'blur(0px)',
     transition: {
       when: 'beforeChildren',
       staggerChildren: 0.06,
@@ -313,13 +328,43 @@ export const controlsButtonsContainer = {
 };
 
 export const controlButtonVariant = {
-  hidden: { y: 10, opacity: 0, scale: 0.95, filter: 'blur(2px)' },
-  show: { y: 0, opacity: 1, scale: 1, filter: 'blur(0px)', transition: transformTransition }
+hidden: { y: 10, opacity: 0, scale: 0.95 },
+show: { y: 0, opacity: 1, scale: 1, transition: transformTransition }
+};
+
+// Subtle ambient background to enhance premium feel without distraction
+export const ambientBackgroundVariant = {
+hidden: {
+opacity: 0,
+scale: 1.02,
+filter: 'blur(6px)'
+},
+show: {
+opacity: 1,
+scale: 1,
+filter: 'blur(0px)',
+transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.05 }
+}
+};
+
+// Time/typography progressive reveal for premium readability
+export const timerTextVariant = {
+  hidden: {
+    opacity: 0,
+    y: 6,
+    willChange: 'transform, opacity'
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    willChange: 'transform, opacity',
+    transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1], delay: 0.12 }
+  }
 };
 
 // CSS class names for will-change optimization
 export const ANIMATION_CSS_CLASSES = {
-  willChangeTransform: 'will-change-transform',
-  willChangeAuto: 'will-change-auto',
-  gpuAccelerated: 'transform-gpu'
+willChangeTransform: 'will-change-transform',
+willChangeAuto: 'will-change-auto',
+gpuAccelerated: 'transform-gpu'
 } as const;
