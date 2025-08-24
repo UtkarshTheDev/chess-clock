@@ -338,6 +338,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
                 onCheck={handleCheck}
                 onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "black" })}
                 onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "black" })}
+                isMobile={isMobile}
               />
             </motion.div>
           </motion.div>
@@ -407,6 +408,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
                 onCheck={handleCheck}
                 onCheckmate={() => setConfirmationState({ isOpen: true, type: "checkmate", player: "white" })}
                 onDraw={() => setConfirmationState({ isOpen: true, type: "draw", player: "white" })}
+                isMobile={isMobile}
               />
             </motion.div>
           </motion.div>

@@ -6,7 +6,7 @@ import useGestures from "@/hooks/useGestures";
 import { ActionButton } from "../ui/ActionButton";
 import { Check, Trophy, Handshake } from "lucide-react";
 import { formatTime } from "./formatTime";
-import { timerTextVariant } from "@/utils/timerAnimations";
+import { timerTextVariant, fontScaleTransition, TIMER_FONT_SCALE, ANIMATION_CSS_CLASSES, prefersReducedMotion } from "@/utils/timerAnimations";
 
 interface TimerSquareProps {
   player: "white" | "black";
@@ -19,6 +19,7 @@ interface TimerSquareProps {
   onCheck: () => void;
   onCheckmate: () => void;
   onDraw: () => void;
+  isMobile?: boolean;
 }
 
 export const TimerSquare = ({
@@ -32,10 +33,12 @@ export const TimerSquare = ({
   onCheck,
   onCheckmate,
   onDraw,
+  isMobile = false,
 }: TimerSquareProps) => {
   const { initialTime, whiteDisplayInfo, blackDisplayInfo } = useTimerStore();
   const displayInfo = player === "white" ? whiteDisplayInfo : blackDisplayInfo;
   const [isGestureActive, setIsGestureActive] = useState(false);
+  const shouldUseReducedMotion = prefersReducedMotion();
 
   const getTimeBasedBackground = () => {
     const timePercentage = (time / initialTime) * 100;
@@ -175,18 +178,43 @@ export const TimerSquare = ({
             )}
           </div>
         )}
-        <motion.span
+        {/* Scale wrapper for ultra-smooth font transitions (mobile only) */}
+        <motion.div
           className={cn(
-            "font-unbounded font-bold leading-none select-none",
-            // Much larger text for inactive timers - better readability
-            isActive ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12" : "text-7xl sm:text-8xl lg:text-9xl mt-6"
+            ANIMATION_CSS_CLASSES.gpuAccelerated,
+            ANIMATION_CSS_CLASSES.willChangeTransform
           )}
-          variants={timerTextVariant}
-          initial="hidden"
-          animate="show"
+          initial={false}
+          animate={isMobile && !shouldUseReducedMotion ? {
+            scale: isActive ? TIMER_FONT_SCALE.active : TIMER_FONT_SCALE.inactiveMobile
+          } : { scale: 1 }}
+          transition={isMobile && !shouldUseReducedMotion ? fontScaleTransition : { duration: 0 }}
+          style={{
+            transformOrigin: player === 'black' ? 'top center' : 'bottom center'
+          }}
         >
-          {formatTime(time)}
-        </motion.span>
+          <motion.span
+            className={cn(
+              "font-unbounded font-bold leading-none select-none",
+              isMobile
+                ? cn(
+                    "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem]",
+                    "mt-10 sm:mt-12"
+                  )
+                : cn(
+                    // Preserve previous desktop behavior
+                    isActive
+                      ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12"
+                      : "text-7xl sm:text-8xl lg:text-9xl mt-6"
+                  )
+            )}
+            variants={timerTextVariant}
+            initial="hidden"
+            animate="show"
+          >
+            {formatTime(time)}
+          </motion.span>
+        </motion.div>
       </div>
       <motion.div
         className={cn(

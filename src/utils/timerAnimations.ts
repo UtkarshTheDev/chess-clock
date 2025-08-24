@@ -55,6 +55,20 @@ export const heightTransition = {
   duration: 1.5 // Slower, more luxurious
 };
 
+// Font scale transition (mobile): tuned to 500ms with material-like easing
+export const fontScaleTransition = {
+  type: "tween" as const,
+  duration: 0.5,
+  ease: [0.4, 0.0, 0.2, 1] as [number, number, number, number]
+};
+
+// Recommended font scale values for timer text
+export const TIMER_FONT_SCALE = {
+  active: 1,
+  // Scale chosen to approximate previous inactive vs active size ratios across breakpoints
+  inactiveMobile: 0.86
+} as const;
+
 // Animation state interface
 export interface AnimationState {
   topSquareHeight: string;
