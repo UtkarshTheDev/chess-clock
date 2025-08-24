@@ -253,7 +253,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
 
   return (
     <motion.div 
-      className="h-screen w-full overflow-hidden"
+      className="h-screen w-full md:h-[93vh] overflow-hidden"
       variants={!shouldUseReducedMotion ? entranceContainer : undefined}
       initial={!shouldUseReducedMotion ? "hidden" : undefined}
       animate={!shouldUseReducedMotion ? "show" : undefined}
@@ -289,7 +289,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
         </motion.div>
 
         {/* Main timer layout - constrained height on desktop to avoid overlaps */}
-        <div className="flex flex-col md:flex-row flex-1 w-full gap-4 md:gap-6 lg:gap-10 items-stretch md:items-center md:justify-center max-h-full md:px-6 md:py-0">
+        <div className="flex flex-col md:flex-row flex-1 w-full gap-4 md:gap-6 lg:gap-10 items-stretch md:items-center md:justify-center max-h-full md:px-6 md:py-0 md:mt-[0rem]">
           {/* Black timer square - anchored at top, expands downward */}
           <motion.div 
             className={cn(
