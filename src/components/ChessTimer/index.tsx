@@ -23,8 +23,7 @@ import {
   controlsEntranceDesktop,
   controlsEntranceMobile,
   controlsButtonsContainer,
-  controlButtonVariant,
-  ambientBackgroundVariant
+  controlButtonVariant
 } from "@/utils/timerAnimations";
 import { useOptimizedAnimations } from "@/hooks/useOptimizedAnimations";
 

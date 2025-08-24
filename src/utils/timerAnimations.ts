@@ -81,7 +81,6 @@ const BASE_HEIGHT = 96; // Slightly reduced to account for container padding
 const DEFAULT_HEIGHT_RATIO = 0.46; // 46% for each square in default state
 const ACTIVE_HEIGHT_RATIO = 0.68; // 68% for active player square (prominent but not overwhelming)
 const INACTIVE_HEIGHT_RATIO = 0.22; // 22% for inactive player square (readable and visible)
-const CONTROLS_HEIGHT = 0.10; // 10% reserved for controls spacing and margins
 
 /**
  * Calculates height values and controls position based on active player state
@@ -192,7 +191,7 @@ class PerformanceMonitor {
     this.lastTime = performance.now();
     this.animationStartTime = this.lastTime;
     
-    const measureFrame = (currentTime: number) => {
+    const measureFrame = () => {
       if (!this.isMonitoring) return;
       
       this.frameCount++;

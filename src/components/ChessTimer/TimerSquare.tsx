@@ -80,10 +80,10 @@ export const TimerSquare = ({
   const gestureHandlers = useGestures({
     onTwoFingerTap: () => onTwoFingerTap(player),
     onLongPress: () => onLongPress(player),
-    onGestureStart: (e) => {
+    onGestureStart: () => {
       if (isActive && isRunning) setIsGestureActive(true);
     },
-    onGestureEnd: (e) => {
+    onGestureEnd: () => {
       setIsGestureActive(false);
     },
     onSingleTap: (e) => {

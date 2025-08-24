@@ -8,6 +8,7 @@ const ubuntu = Ubuntu({
   weight: ["300", "400", "500", "700"],
   variable: "--font-ubuntu",
   display: 'swap',
+  preload: true,
 });
 
 const ubuntuCondensed = Ubuntu_Condensed({
@@ -15,6 +16,7 @@ const ubuntuCondensed = Ubuntu_Condensed({
   weight: "400",
   variable: "--font-ubuntu-condensed",
   display: 'swap',
+  preload: true,
 });
 
 const unbounded = Unbounded({
@@ -22,6 +24,7 @@ const unbounded = Unbounded({
   weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-unbounded",
   display: 'swap',
+  preload: true,
 });
 
 export const viewport = {

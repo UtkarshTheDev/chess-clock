@@ -39,8 +39,7 @@ export const useOptimizedAnimations = (
 ): UseOptimizedAnimationsReturn => {
   const {
     enablePerformanceMonitoring = process.env.NODE_ENV === 'development',
-    onPerformanceUpdate,
-    useTransformAnimations = true
+    onPerformanceUpdate
   } = options;
 
   // Animation state
