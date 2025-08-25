@@ -115,7 +115,7 @@ export const TimerSquare = ({
       // Event handlers are routed via useGestures to avoid duplication
       {...gestureHandlers}
       className={cn(
-        "w-full h-full relative cursor-pointer rounded-2xl overflow-visible",
+        "w-full h-full relative cursor-pointer rounded-2xl overflow-visible box-border",
         "transition-colors duration-300",
         getBackground(),
         isActive && "z-20",
@@ -128,7 +128,7 @@ export const TimerSquare = ({
         isGestureActive && isActive ? "shadow-2xl" : "shadow-lg",
         "backdrop-blur-sm",
         // Responsive sizing with proper margins to prevent border cutoff
-        "mx-1 md:mx-2",
+        "mx-0 md:mx-2",
         // Ensure proper height utilization and clickable area
         "flex flex-col justify-center",
         // Ensure inactive squares are visible above status indicators
