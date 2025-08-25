@@ -23,7 +23,8 @@ import {
   controlsEntranceDesktop,
   controlsEntranceMobile,
   controlsButtonsContainer,
-  controlButtonVariant
+  controlButtonVariant,
+  smoothTween
 } from "@/utils/timerAnimations";
 import { useOptimizedAnimations } from "@/hooks/useOptimizedAnimations";
 
@@ -308,13 +309,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               animate={isMobile ? {
                 height: animationState.topSquareHeight
               } : undefined}
-              transition={isMobile ? {
-                type: "spring",
-                stiffness: 120,
-                damping: 25,
-                mass: 1.8,
-                duration: 1.8
-              } : undefined}
+              transition={isMobile ? smoothTween : undefined}
               initial={isMobile ? {
                 height: animationState.topSquareHeight
               } : undefined}
@@ -378,13 +373,7 @@ export const ChessTimer = ({ onReset }: ChessTimerProps) => {
               animate={isMobile ? {
                 height: animationState.bottomSquareHeight
               } : undefined}
-              transition={isMobile ? {
-                type: "spring",
-                stiffness: 120,
-                damping: 25,
-                mass: 1.8,
-                duration: 1.8
-              } : undefined}
+              transition={isMobile ? smoothTween : undefined}
               initial={isMobile ? {
                 height: animationState.bottomSquareHeight
               } : undefined}

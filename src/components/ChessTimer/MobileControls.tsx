@@ -5,7 +5,8 @@ import {
   ANIMATION_CSS_CLASSES,
   prefersReducedMotion,
   controlsButtonsContainer,
-  controlButtonVariant 
+  controlButtonVariant,
+  smoothTween
 } from "@/utils/timerAnimations";
 
 interface MobileControlsProps {
@@ -38,13 +39,7 @@ const MobileControls: React.FC<MobileControlsProps> = ({
         opacity: 1,
         scale: 1
       } : undefined}
-      transition={isMobile && !shouldUseReducedMotion ? {
-        type: "spring",
-        stiffness: 100,
-        damping: 20,
-        mass: 2.0,
-        duration: 2.0
-      } : undefined}
+      transition={isMobile && !shouldUseReducedMotion ? smoothTween : undefined}
       // Set initial position for mobile
       initial={isMobile && !shouldUseReducedMotion ? {
         y: 0,

@@ -55,6 +55,16 @@ export const heightTransition = {
   duration: 1.5 // Slower, more luxurious
 };
 
+// Shared smooth tween easing for consistent, fluid motion across UI
+export const SMOOTH_EASE = [0.22, 1, 0.36, 1] as [number, number, number, number];
+
+// Reusable tween transition (no spring bounce) for height/position animations
+export const smoothTween = {
+  type: "tween" as const,
+  duration: 1.2,
+  ease: SMOOTH_EASE,
+};
+
 // Font scale transition (mobile): tuned to 500ms with material-like easing
 export const fontScaleTransition = {
   type: "tween" as const,
