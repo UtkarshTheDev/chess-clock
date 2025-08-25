@@ -375,7 +375,7 @@ export const TimerSquare = ({
         animate={{
           opacity: isRunning && isActive ? 1 : 0,
           scale: isRunning && isActive ? 1 : 0.8,
-          y: isRunning && isActive ? 0 : 20,
+          y: isRunning && isActive ? 0 : (isMobile && player === "black" ? -20 : 20),
           filter: isRunning && isActive ? "saturate(1)" : "saturate(0.5)",
         }}
         transition={{
@@ -416,8 +416,10 @@ export const TimerSquare = ({
         style={{
           // Keep disabled interactions when inactive/not running across both mobile and desktop
           pointerEvents: isRunning && isActive ? "auto" : "none",
-          // Keep clear of rounded corners and device safe areas (especially when white is active at bottom)
-          bottom: "max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))",
+          // Keep clear of rounded corners and device safe areas (anchor per player on mobile)
+          ...(isMobile && player === "black"
+            ? { top: "max(1.25rem, calc(env(safe-area-inset-top, 0px) + 1rem))" }
+            : { bottom: "max(1.25rem, calc(env(safe-area-inset-bottom, 0px) + 1rem))" }),
         }}
       >
         <ActionButton
