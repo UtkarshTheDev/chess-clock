@@ -196,16 +196,17 @@ export const TimerSquare = ({
           <motion.span
             className={cn(
               "font-unbounded font-bold leading-none select-none",
+              isMobile && player === 'black' && "transform rotate-180 origin-center",
               isMobile
                 ? cn(
                     "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem]",
                     "mt-10 sm:mt-12"
                   )
                 : cn(
-                    // Preserve previous desktop behavior
-                    isActive
-                      ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12"
-                      : "text-7xl sm:text-8xl lg:text-9xl mt-6"
+                  // Preserve previous desktop behavior
+                  isActive
+                    ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12"
+                    : "text-7xl sm:text-8xl lg:text-9xl mt-6"
                   )
             )}
             variants={timerTextVariant}
