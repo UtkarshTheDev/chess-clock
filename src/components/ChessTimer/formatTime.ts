@@ -20,3 +20,33 @@ export const formatTime = (seconds: number): string => {
       .padStart(2, "0")}`;
   }
 };
+
+// Structured time parts helper for UI rendering
+export interface TimeParts {
+  hasHours: boolean;
+  hours12?: number; // 12-hour formatted hour value when hasHours is true
+  minutes: string; // 2-digit minutes
+  seconds: string; // 2-digit seconds
+}
+
+/**
+ * Returns UI-friendly time parts.
+ * - Hours are converted to 12-hour format with range 1..12 when present
+ * - Minutes/seconds are always zero-padded to 2 digits
+ */
+export const getTimeParts = (seconds: number): TimeParts => {
+  const totalSeconds = Math.floor(seconds);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  const hasHours = hours > 0;
+  const hours12 = hasHours ? (((hours - 1) % 12) + 1) : undefined;
+
+  return {
+    hasHours,
+    hours12,
+    minutes: minutes.toString().padStart(2, "0"),
+    seconds: remainingSeconds.toString().padStart(2, "0"),
+  };
+};

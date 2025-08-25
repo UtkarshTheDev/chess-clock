@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import useGestures from "@/hooks/useGestures";
 import { ActionButton } from "../ui/ActionButton";
 import { Check, Trophy, Handshake } from "lucide-react";
-import { formatTime } from "./formatTime";
+import { getTimeParts } from "./formatTime";
 import {
   timerTextVariant,
   fontScaleTransition,
@@ -253,35 +253,100 @@ export const TimerSquare = ({
                 : "bottom center",
           }}
         >
-          <motion.span
-            className={cn(
-              "font-unbounded font-bold leading-none select-none",
-              // Ensure predictable centering
-              "block w-full text-center",
-              isMobile
-                ? cn(
-                    "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem]",
-                    // Avoid vertical offset for black on mobile so text remains centered
-                    player === "black" ? "mt-0" : "mt-10 sm:mt-12"
-                  )
-                : cn(
-                    // Preserve previous desktop behavior
-                    isActive
-                      ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem] mt-12"
-                      : "text-7xl sm:text-8xl lg:text-9xl mt-6"
-                  )
-            )}
-            variants={timerTextVariant}
-            initial="hidden"
-            animate="show"
-            style={{
-              // Use Framer's rotate so it composes with existing transforms
-              rotate: isMobile && player === "black" ? 180 : 0,
-              transformOrigin: "center",
-            }}
-          >
-            {formatTime(time)}
-          </motion.span>
+          {(() => {
+            const parts = getTimeParts(time);
+            const hasHours = parts.hasHours;
+            // Visual constants
+            const HOURS_SCALE = 0.6; // 60% height
+            const GAP_EM = 0.35; // horizontal gap (legacy, no longer used)
+            const V_GAP_EM = 0.6; // vertical gap between hours and MM:SS
+            const hourText = hasHours && parts.hours12 !== undefined ? `${parts.hours12}h` : "";
+
+            // Compute size classes to match existing behavior (unchanged across threshold)
+            const textSizeClass = isMobile
+              ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem]"
+              : (isActive
+                  ? "text-[6.2rem] sm:text-[7.5rem] lg:text-[9rem]"
+                  : "text-7xl sm:text-8xl lg:text-9xl");
+
+            const marginTopClass = isMobile
+              ? (player === "black" ? "mt-0" : "mt-10 sm:mt-12")
+              : (isActive ? "mt-12" : "mt-6");
+
+            // Determine background luminance to choose highlight color
+            const timePercentage = (time / initialTime) * 100;
+            const isDarkActiveBg =
+              player === "black" || timePercentage <= 10 || timePercentage >= 90;
+
+            // Spacing and sizing for stacked layout
+            const stackGapClass = isActive ? "gap-y-1 sm:gap-y-1.5" : "gap-y-0 sm:gap-y-0.5";
+            const hoursSizeClass = isMobile
+              ? "text-[3.7rem] sm:text-[4.5rem] lg:text-[5.4rem]"
+              : (isActive
+                  ? "text-[3.7rem] sm:text-[4.5rem] lg:text-[5.4rem]"
+                  : "text-5xl sm:text-6xl lg:text-7xl");
+            const hoursOrderClass = (isMobile && player === "black") ? "order-2" : "order-1";
+            const mmssOrderClass = (isMobile && player === "black") ? "order-1" : "order-2";
+
+            return (
+              <div className="relative block w-full text-center">
+                {/* Wrapper stacks hours and MM:SS in normal flow (no absolute) */}
+                <span
+                  className={cn(
+                    "inline-flex flex-col items-center align-middle",
+                    marginTopClass,
+                    stackGapClass,
+                  )}
+                  style={{ rotate: isMobile && player === "black" ? "180deg" : "0deg" }}
+                >
+                  {/* Minutes:Seconds dominant text */}
+                  <motion.span
+                    className={cn(
+                      "font-unbounded font-bold leading-none select-none",
+                      "inline-block",
+                      textSizeClass,
+                      mmssOrderClass,
+                    )}
+                    variants={timerTextVariant}
+                    initial="hidden"
+                    animate={{ ...timerTextVariant.show, scale: hasHours ? 0.92 : 1 }}
+                    transition={{ ...fontScaleTransition }}
+                    style={{
+                      rotate: "0deg",
+                      transformOrigin: "center",
+                    }}
+                  >
+                    {`${parts.minutes}:${parts.seconds}`}
+                  </motion.span>
+                  {/* Hours part: stacked, highlighted only when active */}
+                  {hasHours && (
+                    <motion.span
+                      className={cn(
+                        "font-unbounded font-bold leading-none select-none",
+                        hoursSizeClass,
+                        hoursOrderClass,
+                        ANIMATION_CSS_CLASSES.gpuAccelerated,
+                        isActive && (isDarkActiveBg
+                          ? "text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]"
+                          : "text-amber-700 drop-shadow-[0_0_6px_rgba(234,179,8,0.35)]"),
+                      )}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                      style={{
+                        pointerEvents: "none",
+                        WebkitFontSmoothing: "antialiased",
+                        MozOsxFontSmoothing: "grayscale",
+                      }}
+                    >
+                      {hourText}
+                    </motion.span>
+                  )}
+                </span>
+              </div>
+            );
+          })()}
         </motion.div>
       </div>
       <motion.div
